@@ -64,12 +64,3 @@ namespace rsim::core
         std::vector<std::unique_ptr<Window>> m_OtherWindows;
 	};
 }
-
-
-#ifdef ENABLE_DOCTEST_IN_LIBRARY
-#include "doctest/doctest.h"
-TEST_CASE("we can have tests written here, to test impl. details")
-{
-    CHECK(true);
-}
-#endif
