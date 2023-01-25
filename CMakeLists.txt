@@ -38,25 +38,50 @@ find_lto(CXX)
 #                         Locate files (change as needed).
 # --------------------------------------------------------------------------------
 set(SOURCES          # All .cpp files in src/
-    src/example.cpp
-        src/realsim/core/application.cpp
+    src/realsim/core/Application.cpp
+    src/realsim/core/Window.cpp
+    src/realsim/core/Logger.cpp
+    src/realsim/core/Input.cpp
+
+    src/realsim/graphics/GraphicsDevice.cpp
+    src/realsim/graphics/SwapChain.cpp
 )
 set(TESTFILES        # All .cpp files in tests/
     tests/main.cpp
 )
-set(LIBRARY_NAME realsim_gfx)  # Default name for the library built from src/*.cpp (change if you wish)
+set(LIBRARY_NAME realsim_lib)  # Default name for the library built from src/*.cpp (change if you wish)
 
 # --------------------------------------------------------------------------------
 #                            Build! (Change as needed)
 # --------------------------------------------------------------------------------
 # Compile all sources into a library.
-add_library(${LIBRARY_NAME} OBJECT ${SOURCES} include/realsim/realsim.h)
+add_library(${LIBRARY_NAME} OBJECT ${SOURCES} 
+    include/realsim/RealSim.h
+    include/realsim/core/Assert.h)
 
 # Lib needs its header files, and users of the library must also see these (PUBLIC). (No change needed)
 target_include_directories(${LIBRARY_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/include)
 
+
+find_package(SDL2 2.0.14 REQUIRED)
+find_package(spdlog REQUIRED)
+find_package(Eigen3 CONFIG REQUIRED)
+find_package(fmt CONFIG REQUIRED)
+find_package(directxmath CONFIG REQUIRED)
+
 # There's also (probably) doctests within the library, so we need to see this as well.
-target_link_libraries(${LIBRARY_NAME} PUBLIC doctest)
+target_link_libraries(${LIBRARY_NAME} PUBLIC
+        doctest
+        d3d12
+        d3dcompiler
+        dxgi
+        dxguid
+        Microsoft::DirectXMath
+        spdlog::spdlog
+        SDL2::SDL2
+        Eigen3::Eigen
+        fmt::fmt
+        )
 
 
 # Set the compile options you want (change as needed).
@@ -65,14 +90,14 @@ target_link_libraries(${LIBRARY_NAME} PUBLIC doctest)
 
 # Add an executable for the file app/main.cpp.
 # If you add more executables, copy these lines accordingly.
-add_executable(realsim_application app/main.cpp)   # Name of exec. and location of file.
-target_link_libraries(realsim_application PRIVATE ${LIBRARY_NAME})  # Link the executable to library (if it uses it).
-target_set_warnings(realsim_application ENABLE ALL AS_ERROR ALL DISABLE Annoying) # Set warnings (if needed).
-target_enable_lto(realsim_application optimized)  # enable link-time-optimization if available for non-debug configurations
+add_executable(realsim_interactive  app/main.cpp)   # Name of exec. and location of file.
+target_link_libraries(realsim_interactive PRIVATE ${LIBRARY_NAME})  # Link the executable to library (if it uses it).
+target_set_warnings(realsim_interactive ENABLE ALL AS_ERROR ALL DISABLE Annoying) # Set warnings (if needed).
+target_enable_lto(realsim_interactive optimized)  # enable link-time-optimization if available for non-debug configurations
 
 # Set the properties you require, e.g. what C++ standard to use. Here applied to library and main (change as needed).
 set_target_properties(
-    ${LIBRARY_NAME} realsim_application
+    ${LIBRARY_NAME} realsim_interactive
       PROPERTIES
         CXX_STANDARD 17
         CXX_STANDARD_REQUIRED YES
