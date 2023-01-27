@@ -14,7 +14,7 @@ namespace RSim::Graphics
 		swapChainDesc.SampleDesc.Count = 1;
 		swapChainDesc.SampleDesc.Quality = 0;
 		swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-		swapChainDesc.BufferCount = 2;
+		swapChainDesc.BufferCount = RSIM_NUM_FLAMES_IN_FLIGHT;
 		swapChainDesc.Scaling = DXGI_SCALING_NONE;
 		swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 		swapChainDesc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
@@ -29,7 +29,7 @@ namespace RSim::Graphics
 		cmdQueueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
 		cmdQueueDesc.NodeMask = 0;
 		cmdQueueDesc.Priority = 0;
-		cmdQueueDesc.Type = D3D12_COMMAND_LIST_TYPE_COPY;
+		cmdQueueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
 
 
 		Microsoft::WRL::ComPtr<ID3D12CommandQueue> cmdQueue;
@@ -40,10 +40,17 @@ namespace RSim::Graphics
 			return;
 		}
 
-		HRESULT hr = pDXGIFactory->CreateSwapChainForHwnd(cmdQueue.Get(), hwnd,
-			&swapChainDesc, nullptr, nullptr,
-			m_DXGISwapChain.ReleaseAndGetAddressOf());
-
+		HRESULT hr = pDXGIFactory->CreateSwapChainForHwnd(cmdQueue.Get(), 
+			hwnd,
+			&swapChainDesc, 
+			nullptr, 
+			nullptr,
+			&m_DXGISwapChain);
+		if (FAILED(hr))
+		{
+			rsim_error("Call to IDXGIFactory::CreateSwapChainForHwnd failed!");
+			return;
+		}
 		hr = pDXGIFactory->MakeWindowAssociation(hwnd, DXGI_MWA_NO_ALT_ENTER);
 		if (FAILED(hr))
 		{
@@ -53,7 +60,6 @@ namespace RSim::Graphics
 		else if (SUCCEEDED(hr))
 		{
 			rsim_info("IDXGISwapChain created successfully.");
-			return;
 		}
 	}
 
@@ -74,6 +80,24 @@ namespace RSim::Graphics
 		// TODO: or just strip the check just from non-debug builds.
 		m_DXGISwapChain.As(&pSwapChain3);
 		return pSwapChain3->GetCurrentBackBufferIndex();
+	}
+
+	void SwapChain::CreateBackBuffersFromSwapChain(ID3D12Device* pDevice,
+		std::array<ID3D12Resource*, RSIM_NUM_FLAMES_IN_FLIGHT>& pBackBufferResources,
+		ID3D12DescriptorHeap* pDescHeap) const
+	{
+		// Back Buffer Resources
+		CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(pDescHeap->GetCPUDescriptorHandleForHeapStart());
+
+		auto const DescriptorHandleIncrementSizes = GetDescriptorHandleIncrementSizes(pDevice);
+
+		for (UINT i = 0; i < RSIM_NUM_FLAMES_IN_FLIGHT; ++i)
+		{
+			ThrowIfFailed(m_DXGISwapChain->GetBuffer(i, IID_PPV_ARGS(&pBackBufferResources[i])));
+
+			pDevice->CreateRenderTargetView(pBackBufferResources[i], nullptr, rtvHandle);
+			rtvHandle.Offset(static_cast<INT>(DescriptorHandleIncrementSizes.RTVIncrementSize));
+		}
 	}
 
 	void SwapChain::Present(UINT syncInterval, UINT presentFlags) const

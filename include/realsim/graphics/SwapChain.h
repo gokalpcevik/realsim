@@ -2,13 +2,21 @@
 
 #include <dxgi1_6.h>
 #include <d3d12.h>
+#include <d3dx12.h>
 #include <wrl/client.h>
 
-#include "realsim/graphics/GraphicsDevice.h"
 #include "realsim/core/Window.h"
+
+#include "realsim/graphics/GraphicsDevice.h"
+#include "realsim/graphics/Exception.h"
+#include "realsim/graphics/Helpers.h"
+#include "realsim/graphics/RendererConfiguration.h"
 
 namespace RSim::Graphics
 {
+	/**
+     * \brief Wrapper around the IDXGISwapChain1 class that adds a few new functionality for ease of use with D3D12.
+     */
     class SwapChain
     {
     public:
@@ -18,6 +26,10 @@ namespace RSim::Graphics
         [[nodiscard]] IDXGISwapChain1* GetSwapChain1Raw() const;
 
         [[nodiscard]] UINT GetCurrentBackBufferIndex() const;
+
+        void CreateBackBuffersFromSwapChain(ID3D12Device* pDevice, 
+            std::array<ID3D12Resource*,RSIM_NUM_FLAMES_IN_FLIGHT>& pBackBufferResources, 
+            ID3D12DescriptorHeap* pDescHeap) const;
 
         void Present(UINT syncInterval, UINT presentFlags) const;
 
