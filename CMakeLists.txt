@@ -43,8 +43,13 @@ set(SOURCES          # All .cpp files in src/
     src/realsim/core/Logger.cpp
     src/realsim/core/Input.cpp
 
+    src/realsim/graphics/RealSimGraphics.cpp
     src/realsim/graphics/GraphicsDevice.cpp
     src/realsim/graphics/SwapChain.cpp
+    src/realsim/graphics/Renderer.cpp
+    src/realsim/graphics/MemoryAllocator.cpp
+    src/realsim/graphics/MemoryAllocation.cpp
+    src/realsim/graphics/Exception.cpp
 )
 set(TESTFILES        # All .cpp files in tests/
     tests/main.cpp
@@ -67,7 +72,11 @@ find_package(SDL2 2.0.14 REQUIRED)
 find_package(spdlog REQUIRED)
 find_package(Eigen3 CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
+find_package(directxtk12 CONFIG REQUIRED)
 find_package(directxmath CONFIG REQUIRED)
+find_package(d3d12-memory-allocator CONFIG REQUIRED)
+
+find_path(D3DX12_INCLUDE_DIRS "d3dx12.h")
 
 # There's also (probably) doctests within the library, so we need to see this as well.
 target_link_libraries(${LIBRARY_NAME} PUBLIC
@@ -77,12 +86,15 @@ target_link_libraries(${LIBRARY_NAME} PUBLIC
         dxgi
         dxguid
         Microsoft::DirectXMath
+        Microsoft::DirectXTK12
         spdlog::spdlog
         SDL2::SDL2
         Eigen3::Eigen
         fmt::fmt
+        unofficial::d3d12-memory-allocator
         )
 
+target_include_directories(${LIBRARY_NAME} PUBLIC ${D3D12X_INCLUDE_DIRS})
 
 # Set the compile options you want (change as needed).
 #target_set_warnings(${LIBRARY_NAME} ENABLE ALL AS_ERROR ALL DISABLE Annoying)
