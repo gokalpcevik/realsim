@@ -9,7 +9,7 @@
 
 #include "Assert.h"
 
-namespace rsim::core
+namespace RSim::Core
 {
 	struct WindowDescriptor
 	{

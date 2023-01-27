@@ -7,12 +7,12 @@
 #include "realsim/graphics/GraphicsDevice.h"
 #include "realsim/core/Window.h"
 
-namespace rsim::graphics
+namespace RSim::Graphics
 {
     class SwapChain
     {
     public:
-        SwapChain(IDXGIFactory3* pDXGIFactory, core::Window const* window, GraphicsDevice const& device);
+        SwapChain(IDXGIFactory3* pDXGIFactory, Core::Window const* window, GraphicsDevice const& device);
 
         [[nodiscard]] Microsoft::WRL::ComPtr<IDXGISwapChain1> const& GetSwapChain1() const;
         [[nodiscard]] IDXGISwapChain1* GetSwapChain1Raw() const;

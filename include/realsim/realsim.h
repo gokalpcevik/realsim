@@ -1,7 +1,7 @@
 #pragma once
 #include <cstdint>
 
-namespace rsim
+namespace RSim
 {
     using return_code = std::int32_t;
 }

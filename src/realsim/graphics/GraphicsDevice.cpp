@@ -1,6 +1,6 @@
 #include "realsim/graphics/GraphicsDevice.h"
 
-namespace rsim::graphics
+namespace RSim::Graphics
 {
 	using Microsoft::WRL::ComPtr;
 
@@ -54,7 +54,7 @@ namespace rsim::graphics
                 dedicatedAdapterFound = true;
 
             	// Log information about the dedicated video adapter for testing purposes.
-                rsim_info("Using the adapter with the properties below:");
+                rsim_trace("Using the adapter with the properties below:");
 
             	constexpr size_t outputSize = _countof(desc.Description) + 1;
                 auto adapterDescriptionPtr = new char[outputSize];
@@ -63,10 +63,10 @@ namespace rsim::graphics
 
             	wcstombs_s(&charsConverted, adapterDescriptionPtr, outputSize, inputW, 128);
 
-            	rsim_info("Description: {0}", adapterDescriptionPtr);
+            	rsim_trace("Description: {0}", adapterDescriptionPtr);
                 delete[] adapterDescriptionPtr;
 
-            	rsim_info("Dedicated Video Memory: {0}MB", desc.DedicatedVideoMemory / 1024 / 1024);
+            	rsim_trace("Dedicated Video Memory: {0}MB", desc.DedicatedVideoMemory / 1024 / 1024);
 
             	break;
             }

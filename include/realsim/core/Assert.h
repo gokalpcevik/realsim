@@ -8,5 +8,6 @@
 #else
 #define RSIM_ASSERTM(...)
 #endif
-
+#else
+#define RSIM_ASSERTM(...)
 #endif

@@ -1,8 +1,8 @@
 #include "realsim/graphics/SwapChain.h"
 
-namespace rsim::graphics
+namespace RSim::Graphics
 {
-	SwapChain::SwapChain(IDXGIFactory3* pDXGIFactory, core::Window const* window, GraphicsDevice const& device)
+	SwapChain::SwapChain(IDXGIFactory3* pDXGIFactory, Core::Window const* window, GraphicsDevice const& device)
 	{
 		HWND hwnd = window->GetHWND();
 
@@ -18,7 +18,10 @@ namespace rsim::graphics
 		swapChainDesc.Scaling = DXGI_SCALING_NONE;
 		swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 		swapChainDesc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
-		swapChainDesc.Flags = device.IsTearingSupported() ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
+
+		bool tearingSupported = device.IsTearingSupported();
+		rsim_trace("Tearing supported: {0}", tearingSupported);
+		swapChainDesc.Flags = tearingSupported ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
 
 		auto const& pDevice = device.GetDevice2();
 
@@ -27,6 +30,7 @@ namespace rsim::graphics
 		cmdQueueDesc.NodeMask = 0;
 		cmdQueueDesc.Priority = 0;
 		cmdQueueDesc.Type = D3D12_COMMAND_LIST_TYPE_COPY;
+
 
 		Microsoft::WRL::ComPtr<ID3D12CommandQueue> cmdQueue;
 
@@ -48,7 +52,7 @@ namespace rsim::graphics
 		}
 		else if (SUCCEEDED(hr))
 		{
-			rsim_info("IDXGISwapChain creation successful.");
+			rsim_info("IDXGISwapChain created successfully.");
 			return;
 		}
 	}
@@ -66,7 +70,9 @@ namespace rsim::graphics
 	UINT SwapChain::GetCurrentBackBufferIndex() const
 	{
 		Microsoft::WRL::ComPtr<IDXGISwapChain3> pSwapChain3;
-		assert(SUCCEEDED(m_DXGISwapChain.As(&pSwapChain3)));
+		// Discard the HRESULT here because we already check this in the device constructor(?)
+		// TODO: or just strip the check just from non-debug builds.
+		m_DXGISwapChain.As(&pSwapChain3);
 		return pSwapChain3->GetCurrentBackBufferIndex();
 	}
 

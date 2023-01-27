@@ -3,7 +3,7 @@
 #include <SDL2/SDL_mouse.h>
 #include <Eigen/Eigen>
 
-namespace rsim::core
+namespace RSim::Core
 {
 	class Input final
 	{

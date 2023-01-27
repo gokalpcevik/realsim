@@ -9,14 +9,16 @@
 #include "realsim/core/Input.h"
 #include "realsim/core/Logger.h"
 
-#include "realsim/graphics/GraphicsDevice.h"
-#include "realsim/graphics/SwapChain.h"
+#include "realsim/graphics/Renderer.h"
+#include "realsim/graphics/RealSimGraphics.h"
+
+#include "RealSimConfig.h"
 
 #define REALSIM_EXIT_SUCCESS 0
 #define REALSIM_EXIT_FAIL (-1)
 #define REALSIM_EXIT_CONTINUE (1)
 
-namespace rsim::core
+namespace RSim::Core
 {
 	class Application
 	{
@@ -50,11 +52,12 @@ namespace rsim::core
         void AddWindow(std::unique_ptr<Window> window);
 
     protected:
+        virtual return_code OnInit();
         virtual void OnUpdate();
     private:
-        void HandleSDLEvents(SDL_Event const& e);
+        void Handle_SDL_Events(SDL_Event const& e);
         void CalculateUpdateStatistics();
-
+        static void LogLibraryVersion();
 	protected:
         CommandLineArgs m_StartArgs{};
         bool m_Running = true;
@@ -62,5 +65,7 @@ namespace rsim::core
 
         std::unique_ptr<Window> m_MainWindow;
         std::vector<std::unique_ptr<Window>> m_OtherWindows;
+
+        std::unique_ptr<GFX::Renderer> m_Renderer;
 	};
 }

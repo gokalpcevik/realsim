@@ -7,8 +7,12 @@
 #include "realsim/core/Logger.h"
 #include "realsim/core/Assert.h"
 
-namespace rsim::graphics
+namespace RSim::Graphics
 {
+	/**
+	 * \brief A wrapper around the ID3D12Device interface.
+	 * Adds convenience functions and contains boilerplate for device creation.
+	 */
 	class GraphicsDevice
 	{
 	public:
@@ -24,6 +28,9 @@ namespace rsim::graphics
 		[[nodiscard]] Microsoft::WRL::ComPtr<IDXGIAdapter1> const& GetAdapter1() const;
 		[[nodiscard]] IDXGIAdapter1* GetAdapter1Raw() const;
 
+		/**
+		 * \brief Checks for tearing support in the factory
+		 */
 		[[nodiscard]] bool IsTearingSupported() const;
 
 	private:

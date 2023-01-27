@@ -1,6 +1,6 @@
 #include "realsim/core/Logger.h"
 
-namespace rsim::core
+namespace RSim::Core
 {
 	std::shared_ptr<spdlog::async_logger> Logger::s_Logger;
 

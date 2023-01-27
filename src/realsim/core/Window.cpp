@@ -1,6 +1,6 @@
 #include "realsim/core/Window.h"
 
-namespace rsim::core
+namespace RSim::Core
 {
 	Window::Window(WindowDescriptor const& desc)
 	{
@@ -18,6 +18,8 @@ namespace rsim::core
 		switch(e.window.event)
 		{
 			case SDL_WINDOWEVENT_CLOSE:
+				break;
+			default: 
 				break;
 			// Handle other window events when we implement a renderer
 		}

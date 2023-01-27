@@ -1,7 +1,7 @@
 #include "realsim/core/Application.h"
 
 
-namespace rsim::core
+namespace RSim::Core
 {
 	auto Application::UpdateStatistics::GetFramesPerSecond() const -> float
 	{
@@ -27,9 +27,13 @@ namespace rsim::core
 	return_code Application::Run()
 	{
 		Logger::Init();
+		Application::LogLibraryVersion();
 
-		auto device = std::make_unique<graphics::GraphicsDevice>();
-		auto swapchain = std::make_unique<graphics::SwapChain>(device->GetFactory3Raw(), m_MainWindow.get(), *device);
+		if(return_code init = OnInit(); init != REALSIM_EXIT_SUCCESS)
+		{
+			rsim_error("Initialization has failed!");
+			return init;
+		}
 
 		SDL_Event e;
 
@@ -39,7 +43,7 @@ namespace rsim::core
 
 			while(SDL_PollEvent(&e) != 0)
 			{
-				this->HandleSDLEvents(e);
+				this->Handle_SDL_Events(e);
 			}
 
 			this->OnUpdate();
@@ -64,11 +68,17 @@ namespace rsim::core
 		m_OtherWindows.emplace_back(std::move(window));
 	}
 
+	return_code Application::OnInit()
+	{
+		m_Renderer = std::make_unique<GFX::Renderer>(m_MainWindow.get());
+		return REALSIM_EXIT_SUCCESS;
+	}
+
 	void Application::OnUpdate()
 	{
 	}
 
-	void Application::HandleSDLEvents(SDL_Event const& e)
+	void Application::Handle_SDL_Events(SDL_Event const& e)
 	{
 		if (e.type == SDL_QUIT)
 		{
@@ -96,6 +106,14 @@ namespace rsim::core
 		auto const counter = SDL_GetPerformanceCounter();
 		m_UpdateStats.m_FrameTime = counter - m_UpdateStats.m_LastTickCount;
 		m_UpdateStats.m_LastTickCount = counter;
+	}
+
+	void Application::LogLibraryVersion()
+	{
+		rsim_info("Currently running on RealSim library version: {}.{}.{}", 
+			RSIM_PROJECT_VERSION_MAJOR,
+		    RSIM_PROJECT_VERSION_MINOR, 
+			RSIM_PROJECT_VERSION_PATCH);
 	}
 }
 
