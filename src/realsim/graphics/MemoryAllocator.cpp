@@ -19,8 +19,8 @@ namespace RSim::Graphics
 			rsim_error("D3D12MemoryAllocator cannot be created.");
 			RSIM_ASSERTM(false, "D3D12MemoryAllocator cannot be created.");
 		}
-
-		LogBudget();
+		rsim_info("Memory allocator has been created with the following budget:");
+		this->LogBudget();
 	}
 
 	MemoryAllocator::MemoryAllocator(GraphicsDevice const& device, D3D12MA::ALLOCATOR_DESC const& allocatorDesc)
@@ -66,9 +66,15 @@ namespace RSim::Graphics
 		D3D12MA::Budget GPUBudget{}, CPUBudget{};
 
 		m_Allocator->GetBudget(&GPUBudget, &CPUBudget);
-		rsim_trace("Memory allocator has been created with the following budget:");
 		rsim_trace("Video Memory Budget:{} MB, CPU Memory Budget:{} MB",
 			GPUBudget.BudgetBytes / 1024 / 1024,
 			CPUBudget.BudgetBytes / 1024 / 1024);
+	}
+
+	std::pair<D3D12MA::Budget, D3D12MA::Budget> MemoryAllocator::GetBudget() const
+	{
+		D3D12MA::Budget GPUBudget{}, CPUBudget{};
+		m_Allocator->GetBudget(&GPUBudget, &CPUBudget);
+		return {GPUBudget,CPUBudget};
 	}
 }

@@ -16,30 +16,46 @@ namespace RSim::Graphics
 
 	/**
 	 * \brief Creates a memory allocator for the renderer with the default allocator description options.
-	 * \param device A GraphicsDevice instance.
+	 * \param device The GraphicsDevice instance.
 	 * \return The newly created memory allocator.
 	 */
 	std::unique_ptr<MemoryAllocator> CreateMemoryAllocator(GraphicsDevice const& device);
+
+	/**
+	 * \brief Creates a memory allocator for the renderer with the given allocator description options.
+	 * \param device The GraphicsDevice instance.
+	 * \param allocatorDesc Allocator description that will be used to construct the allocator.
+	 */
 	std::unique_ptr<MemoryAllocator> CreateMemoryAllocator(GraphicsDevice const& device, D3D12MA::ALLOCATOR_DESC const& allocatorDesc);
 
 	class MemoryAllocator final
 	{
 	public:
+		MemoryAllocator& operator=(MemoryAllocator const&) = delete;
+		MemoryAllocator(MemoryAllocator const&) = delete;
+
 		~MemoryAllocator();
 
 		[[nodiscard]] std::unique_ptr<MemoryAllocation> CreateResource(D3D12MA::ALLOCATION_DESC const* pAllocDesc,
-			D3D12_RESOURCE_DESC const* pResourceDesc, 
-			D3D12_RESOURCE_STATES InitialResourceState, 
-			D3D12_CLEAR_VALUE const* pOptimizedClearValue,
-			ID3D12Resource* pResource = nullptr) const;
+		                                                               D3D12_RESOURCE_DESC const* pResourceDesc, 
+		                                                               D3D12_RESOURCE_STATES InitialResourceState, 
+		                                                               D3D12_CLEAR_VALUE const* pOptimizedClearValue,
+		                                                               ID3D12Resource* pResource = nullptr) const;
 
+		/**
+		 * \brief Logs the information about the current budget.
+		 */
 		void LogBudget() const;
+		
+		/**
+		 * \brief 'Gets' the budget, does not calculate and should be fast enough to call every frame.
+		 * \return Returns the budget of the GPU and the CPU, respectively in the pair order.
+		 */
+		[[nodiscard]] inline std::pair<D3D12MA::Budget, D3D12MA::Budget> GetBudget() const;
 
 	private:
 		MemoryAllocator(GraphicsDevice const& device);
 		MemoryAllocator(GraphicsDevice const& device,D3D12MA::ALLOCATOR_DESC const& allocatorDesc);
-		MemoryAllocator(MemoryAllocator const&) = delete;
-		MemoryAllocator& operator=(MemoryAllocator const&) = delete;
 
 		friend std::unique_ptr<MemoryAllocator> CreateMemoryAllocator(GraphicsDevice const& device)
 		{
