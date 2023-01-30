@@ -99,7 +99,7 @@ namespace RSim::Core
 				if(e.window.event == SDL_WINDOWEVENT_RESIZED)
 				{
 					uint32_t width  = (uint32_t)e.window.data1;
-					uint32_t height = (uint32_t)e.window.data1;
+					uint32_t height = (uint32_t)e.window.data2;
 					m_Renderer->Resize(width, height);
 				}
 			}
