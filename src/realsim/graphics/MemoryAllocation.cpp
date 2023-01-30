@@ -11,7 +11,9 @@ namespace RSim::Graphics
 	MemoryAllocation::~MemoryAllocation()
 	{
 		if(m_Allocation)
+		{
 			m_Allocation->Release();
+		}
 	}
 
 	ID3D12Resource* MemoryAllocation::GetResource() const noexcept

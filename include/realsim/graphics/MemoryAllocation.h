@@ -3,6 +3,8 @@
 #include <D3D12MemAlloc.h>
 #include <memory>
 
+#include "realsim/core/Logger.h"
+
 namespace RSim::Graphics
 {
 	class MemoryAllocation;

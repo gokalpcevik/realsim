@@ -54,10 +54,10 @@ namespace RSim::Graphics
 			InitialResourceState, 
 			pOptimizedClearValue, 
 			&allocation, 
-			__uuidof(ID3D12Resource),
-		    reinterpret_cast<void**>(&pResource));
-
+			IID_NULL,
+		    nullptr);
 		ThrowIfFailed(hr);
+
 		return std::unique_ptr<MemoryAllocation>(new MemoryAllocation(allocation));
 	}
 
@@ -66,6 +66,7 @@ namespace RSim::Graphics
 		D3D12MA::Budget GPUBudget{}, CPUBudget{};
 
 		m_Allocator->GetBudget(&GPUBudget, &CPUBudget);
+
 		rsim_trace("Video Memory Budget:{} MB, CPU Memory Budget:{} MB",
 			GPUBudget.BudgetBytes / 1024 / 1024,
 			CPUBudget.BudgetBytes / 1024 / 1024);

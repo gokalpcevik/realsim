@@ -3,6 +3,7 @@
 #include <memory>
 #include <D3D12MemAlloc.h>
 #include <wrl.h>
+#include <fmt/xchar.h>
 
 #include "realsim/graphics/MemoryAllocation.h"
 #include "realsim/graphics/GraphicsDevice.h"
@@ -28,6 +29,13 @@ namespace RSim::Graphics
 	 */
 	std::unique_ptr<MemoryAllocator> CreateMemoryAllocator(GraphicsDevice const& device, D3D12MA::ALLOCATOR_DESC const& allocatorDesc);
 
+
+
+	/**
+	 * \brief A wrapper around D3DMA::Allocator. All calls to this from multiple threads are safe as stated in the D3D12MA considerations:
+	 * All calls to methods of D3D12MA::Allocator class are safe to be made from multiple threads simultaneously because they are synchronized
+	 * internally when needed.
+	 */
 	class MemoryAllocator final
 	{
 	public:
