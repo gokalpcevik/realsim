@@ -16,11 +16,10 @@
 
 int main(int argc, char** argv)
 {
-    auto* application = new RSim::Core::Application({argc, argv});
+	auto* application = new RSim::Core::Application({argc, argv});
 
-    RSim::Core::WindowDescriptor desc{ "RealSim", 1600, 900, SDL_WINDOWPOS_CENTERED_DISPLAY(1),SDL_WINDOWPOS_CENTERED_DISPLAY(1),0};
+    RSim::Core::WindowDescriptor desc{ "RealSim", 1366, 768, SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED,SDL_WINDOW_RESIZABLE};
 	auto window = std::make_unique<RSim::Core::Window>(desc);
-
 	application->SetMainWindow(std::move(window));
 	return application->Run();
 }

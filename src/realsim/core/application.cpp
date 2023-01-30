@@ -48,7 +48,9 @@ namespace RSim::Core
 
 			this->OnUpdate();
 
-
+			FLOAT const color[] = { 0.021f,0.021f,0.171f,1.0f};
+			m_Renderer->Clear(color);
+			m_Renderer->Present();
 		}
 		return REALSIM_EXIT_SUCCESS;
 	}
@@ -76,6 +78,10 @@ namespace RSim::Core
 
 	void Application::OnUpdate()
 	{
+		if(Input::IsKeyPressed(SDL_SCANCODE_ESCAPE))
+		{
+			Shutdown();
+		}
 	}
 
 	void Application::Handle_SDL_Events(SDL_Event const& e)
@@ -89,13 +95,19 @@ namespace RSim::Core
 		{
 			if (e.window.windowID == SDL_GetWindowID(m_MainWindow->GetSDLWindow()))
 			{
-				m_MainWindow->HandleEvent(e);
+				m_MainWindow->HandleEvent(e,true);
+				if(e.window.event == SDL_WINDOWEVENT_RESIZED)
+				{
+					uint32_t width  = (uint32_t)e.window.data1;
+					uint32_t height = (uint32_t)e.window.data1;
+					m_Renderer->Resize(width, height);
+				}
 			}
 			else
 			{
 				for (auto const& window : m_OtherWindows)
 				{
-					window->HandleEvent(e);
+					window->HandleEvent(e,false);
 				}
 			}
 		}
@@ -110,7 +122,7 @@ namespace RSim::Core
 
 	void Application::LogLibraryVersion()
 	{
-		rsim_info("Currently running on RealSim library version: {}.{}.{}", 
+		rsim_info("Library Version {}.{}.{}", 
 			RSIM_PROJECT_VERSION_MAJOR,
 		    RSIM_PROJECT_VERSION_MINOR, 
 			RSIM_PROJECT_VERSION_PATCH);

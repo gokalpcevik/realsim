@@ -20,7 +20,7 @@ namespace RSim::Graphics
     class SwapChain
     {
     public:
-        SwapChain(IDXGIFactory3* pDXGIFactory, Core::Window const* window, GraphicsDevice const& device);
+        SwapChain(IDXGIFactory3* pDXGIFactory, ID3D12CommandQueue* pCmdQueue, Core::Window const* window, GraphicsDevice const& device);
 
         [[nodiscard]] Microsoft::WRL::ComPtr<IDXGISwapChain1> const& GetSwapChain1() const;
         [[nodiscard]] IDXGISwapChain1* GetSwapChain1Raw() const;
@@ -28,7 +28,7 @@ namespace RSim::Graphics
         [[nodiscard]] UINT GetCurrentBackBufferIndex() const;
 
         void CreateBackBuffersFromSwapChain(ID3D12Device* pDevice, 
-            std::array<ID3D12Resource*,RSIM_NUM_FLAMES_IN_FLIGHT>& pBackBufferResources, 
+            std::array<ID3D12Resource*, NumFramesInFlight>& pBackBufferResources,
             ID3D12DescriptorHeap* pDescHeap) const;
 
         void Present(UINT syncInterval, UINT presentFlags) const;

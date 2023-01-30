@@ -20,8 +20,7 @@ namespace RSim::Graphics
         if (FAILED(hr))
         {
             rsim_error("Error while creating DXGI Factory!");
-            assert(false);
-        	return;
+            throw ComException(hr);
         }
 
         ComPtr<IDXGIFactory6> DXGIFactory6;
@@ -30,8 +29,7 @@ namespace RSim::Graphics
         if (FAILED(hr))
         {
             rsim_error("RealSim requires at least Windows 10, version 1803 or later.");
-            assert(false);
-        	return;
+            throw ComException(hr);
         }
 
         bool dedicatedAdapterFound = false;
@@ -75,7 +73,7 @@ namespace RSim::Graphics
         if (!dedicatedAdapterFound)
         {
             rsim_error("Dedicated video adapter could not be found!");
-            return;
+            throw ComException(hr);
         }
 
         hr = ::D3D12CreateDevice(m_DXGIAdapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&m_Device));
@@ -83,7 +81,7 @@ namespace RSim::Graphics
         if (FAILED(hr))
         {
             rsim_error("Error while creating the D3D12Device!");
-            return;
+            throw ComException(hr);
         }
 
         /*

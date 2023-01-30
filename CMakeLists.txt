@@ -47,9 +47,14 @@ set(SOURCES          # All .cpp files in src/
     src/realsim/graphics/GraphicsDevice.cpp
     src/realsim/graphics/SwapChain.cpp
     src/realsim/graphics/Renderer.cpp
+    src/realsim/graphics/RendererConfiguration.cpp
     src/realsim/graphics/MemoryAllocator.cpp
     src/realsim/graphics/MemoryAllocation.cpp
+    src/realsim/graphics/CommandAllocator.cpp
+    src/realsim/graphics/LinearAllocator.cpp
+    src/realsim/graphics/CommandQueue.cpp
     src/realsim/graphics/Exception.cpp
+    src/realsim/graphics/Helpers.cpp
 )
 set(TESTFILES        # All .cpp files in tests/
     tests/main.cpp
@@ -102,7 +107,7 @@ target_include_directories(${LIBRARY_NAME} PUBLIC ${D3D12X_INCLUDE_DIRS})
 
 # Add an executable for the file app/main.cpp.
 # If you add more executables, copy these lines accordingly.
-add_executable(realsim_interactive  app/main.cpp)   # Name of exec. and location of file.
+add_executable(realsim_interactive  app/Main.cpp)   # Name of exec. and location of file.
 target_link_libraries(realsim_interactive PRIVATE ${LIBRARY_NAME})  # Link the executable to library (if it uses it).
 target_set_warnings(realsim_interactive ENABLE ALL AS_ERROR ALL DISABLE Annoying) # Set warnings (if needed).
 target_enable_lto(realsim_interactive optimized)  # enable link-time-optimization if available for non-debug configurations

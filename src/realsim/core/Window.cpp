@@ -13,7 +13,7 @@ namespace RSim::Core
 		SDL_DestroyWindow(m_SDL_Window);
 	}
 
-	void Window::HandleEvent(SDL_Event const& e)
+	void Window::HandleEvent(SDL_Event const& e,bool IsMainWindow)
 	{
 		switch(e.window.event)
 		{

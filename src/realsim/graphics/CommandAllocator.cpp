@@ -33,7 +33,7 @@ namespace RSim::Graphics
 		m_AllocatorPool.clear();
 	}
 
-	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> CommandAllocatorPool::RequestAllocator(uint64_t CompletedFenceValue)
+	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> CommandAllocatorPool::RequestCommandAllocator(uint64_t CompletedFenceValue)
 	{
 		std::lock_guard lockGuard(m_AllocatorMutex);
 

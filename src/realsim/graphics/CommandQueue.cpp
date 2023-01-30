@@ -4,24 +4,28 @@ namespace RSim::Graphics
 {
 	CommandQueue::CommandQueue(ID3D12Device2* pDevice, D3D12_COMMAND_LIST_TYPE CommandType)
 	{
-        m_CmdType = CommandType;
-        m_NextFenceValue = ((uint64_t)m_CmdType << 56) + 1;
-        m_LastCompletedFenceValue = ((uint64_t)m_CmdType << 56);
+		m_CmdType = CommandType;
+		m_NextFenceValue = ((uint64_t)m_CmdType << 56) + 1;
+		m_LastCompletedFenceValue = ((uint64_t)m_CmdType << 56);
 
-        D3D12_COMMAND_QUEUE_DESC queueDesc = {};
-        queueDesc.Type = m_CmdType;
-        queueDesc.NodeMask = 0;
-        ThrowIfFailed(pDevice->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&m_CmdQueue)));
+		D3D12_COMMAND_QUEUE_DESC queueDesc = {};
+		queueDesc.Type = m_CmdType;
+		queueDesc.NodeMask = 0;
+		ThrowIfFailed(pDevice->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&m_CmdQueue)));
 
-        ThrowIfFailed(pDevice->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_Fence)));
+		m_CmdQueue->SetName(L"CommandQueue");
 
-        m_Fence->Signal(m_LastCompletedFenceValue);
+		ThrowIfFailed(pDevice->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_Fence)));
 
-        m_hFenceEvent = CreateEventEx(NULL, false, false, EVENT_ALL_ACCESS);
-        assert(m_hFenceEvent != INVALID_HANDLE_VALUE);
+		m_Fence->SetName(L"CommandQueue::m_Fence");
 
-        m_AllocatorPool = std::make_unique<CommandAllocatorPool>(pDevice, CommandType);
-        assert(m_CmdQueue);
+		m_Fence->Signal(m_LastCompletedFenceValue);
+
+		m_hFenceEvent = CreateEventEx(NULL, false, false, EVENT_ALL_ACCESS);
+		assert(m_hFenceEvent != INVALID_HANDLE_VALUE);
+
+		m_AllocatorPool = std::make_unique<CommandAllocatorPool>(pDevice, CommandType);
+		assert(m_CmdQueue);
 	}
 
 	CommandQueue::~CommandQueue()
@@ -32,33 +36,33 @@ namespace RSim::Graphics
 
 	uint64_t CommandQueue::PollCurrentFenceValue()
 	{
-        m_LastCompletedFenceValue = std::max(m_LastCompletedFenceValue, m_Fence->GetCompletedValue());
-        return m_LastCompletedFenceValue;
+		m_LastCompletedFenceValue = std::max(m_LastCompletedFenceValue, m_Fence->GetCompletedValue());
+		return m_LastCompletedFenceValue;
 	}
 
 	bool CommandQueue::IsFenceCompleted(uint64_t FenceValue)
 	{
-        if(FenceValue > m_LastCompletedFenceValue)
-        {
+		if (FenceValue > m_LastCompletedFenceValue)
+		{
 			PollCurrentFenceValue();
-        }
+		}
 
-        return FenceValue <= m_LastCompletedFenceValue;
+		return FenceValue <= m_LastCompletedFenceValue;
 	}
 
 	void CommandQueue::InsertWait(uint64_t FenceValue) const
 	{
-        m_CmdQueue->Wait(m_Fence.Get(), FenceValue);
+		m_CmdQueue->Wait(m_Fence.Get(), FenceValue);
 	}
 
 	void CommandQueue::InsertWaitForQueueFence(CommandQueue const& Other, uint64_t FenceValue) const
 	{
-        m_CmdQueue->Wait(Other.GetFence().Get(), FenceValue);
+		m_CmdQueue->Wait(Other.GetFence().Get(), FenceValue);
 	}
 
 	void CommandQueue::InsertWaitForQueue(CommandQueue const& Other) const
 	{
-        m_CmdQueue->Wait(Other.GetFence().Get(), Other.GetNextFenceValue() - 1);
+		m_CmdQueue->Wait(Other.GetFence().Get(), Other.GetNextFenceValue() - 1);
 	}
 
 	void CommandQueue::WaitForFence(uint64_t FenceValue)
@@ -106,8 +110,8 @@ namespace RSim::Graphics
 		: m_pDevice(pDevice)
 	{
 		m_GraphicsQueue = std::make_unique<CommandQueue>(pDevice, D3D12_COMMAND_LIST_TYPE_DIRECT);
-		m_ComputeQueue  = std::make_unique<CommandQueue>(pDevice, D3D12_COMMAND_LIST_TYPE_COMPUTE);
-		m_CopyQueue     = std::make_unique<CommandQueue>(pDevice, D3D12_COMMAND_LIST_TYPE_COPY);
+		m_ComputeQueue = std::make_unique<CommandQueue>(pDevice, D3D12_COMMAND_LIST_TYPE_COMPUTE);
+		m_CopyQueue = std::make_unique<CommandQueue>(pDevice, D3D12_COMMAND_LIST_TYPE_COPY);
 	}
 
 	CommandQueue& CommandListController::GetQueue(D3D12_COMMAND_LIST_TYPE CommandType) const

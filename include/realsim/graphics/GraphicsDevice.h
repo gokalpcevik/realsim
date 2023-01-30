@@ -6,6 +6,7 @@
 
 #include "realsim/core/Logger.h"
 #include "realsim/core/Assert.h"
+#include "realsim/graphics/Exception.h"
 
 namespace RSim::Graphics
 {

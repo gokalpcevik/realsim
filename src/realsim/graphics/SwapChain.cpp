@@ -2,7 +2,7 @@
 
 namespace RSim::Graphics
 {
-	SwapChain::SwapChain(IDXGIFactory3* pDXGIFactory, Core::Window const* window, GraphicsDevice const& device)
+	SwapChain::SwapChain(IDXGIFactory3* pDXGIFactory, ID3D12CommandQueue* pCmdQueue, Core::Window const* window, GraphicsDevice const& device)
 	{
 		HWND hwnd = window->GetHWND();
 
@@ -14,33 +14,17 @@ namespace RSim::Graphics
 		swapChainDesc.SampleDesc.Count = 1;
 		swapChainDesc.SampleDesc.Quality = 0;
 		swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-		swapChainDesc.BufferCount = RSIM_NUM_FLAMES_IN_FLIGHT;
+		swapChainDesc.BufferCount = NumFramesInFlight;
 		swapChainDesc.Scaling = DXGI_SCALING_NONE;
 		swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 		swapChainDesc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
 
 		bool tearingSupported = device.IsTearingSupported();
-		rsim_trace("Tearing supported: {0}", tearingSupported);
+		rsim_trace("GraphicsDevice::IsTearingSupported -> {0}", tearingSupported);
 		swapChainDesc.Flags = tearingSupported ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
 
 		auto const& pDevice = device.GetDevice2();
-
-		D3D12_COMMAND_QUEUE_DESC cmdQueueDesc{};
-		cmdQueueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
-		cmdQueueDesc.NodeMask = 0;
-		cmdQueueDesc.Priority = 0;
-		cmdQueueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
-
-
-		Microsoft::WRL::ComPtr<ID3D12CommandQueue> cmdQueue;
-
-		if(FAILED(pDevice->CreateCommandQueue(&cmdQueueDesc, IID_PPV_ARGS(&cmdQueue))))
-		{
-			rsim_error("Error while creating the copy command queue for the swapchain.");
-			return;
-		}
-
-		HRESULT hr = pDXGIFactory->CreateSwapChainForHwnd(cmdQueue.Get(), 
+		HRESULT hr = pDXGIFactory->CreateSwapChainForHwnd(pCmdQueue,
 			hwnd,
 			&swapChainDesc, 
 			nullptr, 
@@ -49,18 +33,16 @@ namespace RSim::Graphics
 		if (FAILED(hr))
 		{
 			rsim_error("Call to IDXGIFactory::CreateSwapChainForHwnd failed!");
-			return;
+			throw ComException(hr);
 		}
 		hr = pDXGIFactory->MakeWindowAssociation(hwnd, DXGI_MWA_NO_ALT_ENTER);
 		if (FAILED(hr))
 		{
 			rsim_error("IDXGIFactory::MakeWindowAssociation failed in file {0}:{1}", __FILE__, __LINE__);
-			return;
+			throw ComException(hr);
 		}
-		else if (SUCCEEDED(hr))
-		{
-			rsim_info("IDXGISwapChain created successfully.");
-		}
+
+		rsim_info("IDXGISwapChain created successfully.");
 	}
 
 	Microsoft::WRL::ComPtr<IDXGISwapChain1> const& SwapChain::GetSwapChain1() const
@@ -83,7 +65,7 @@ namespace RSim::Graphics
 	}
 
 	void SwapChain::CreateBackBuffersFromSwapChain(ID3D12Device* pDevice,
-		std::array<ID3D12Resource*, RSIM_NUM_FLAMES_IN_FLIGHT>& pBackBufferResources,
+		std::array<ID3D12Resource*, NumFramesInFlight>& pBackBufferResources,
 		ID3D12DescriptorHeap* pDescHeap) const
 	{
 		// Back Buffer Resources
@@ -91,9 +73,9 @@ namespace RSim::Graphics
 
 		auto const DescriptorHandleIncrementSizes = GetDescriptorHandleIncrementSizes(pDevice);
 
-		for (UINT i = 0; i < RSIM_NUM_FLAMES_IN_FLIGHT; ++i)
+		for (UINT i = 0; i < NumFramesInFlight; ++i)
 		{
-			ThrowIfFailed(m_DXGISwapChain->GetBuffer(i, IID_PPV_ARGS(&pBackBufferResources[i])));
+			ThrowIfFailed(m_DXGISwapChain->GetBuffer(i, __uuidof(ID3D12Resource), reinterpret_cast<void**>(&pBackBufferResources[i])));
 
 			pDevice->CreateRenderTargetView(pBackBufferResources[i], nullptr, rtvHandle);
 			rtvHandle.Offset(static_cast<INT>(DescriptorHandleIncrementSizes.RTVIncrementSize));

@@ -49,10 +49,10 @@ namespace RSim::Core
 		Window& operator=(Window const&) = delete;
 		virtual ~Window();
 
-		virtual void HandleEvent(SDL_Event const& e);
+		virtual void HandleEvent(SDL_Event const& e, bool IsMainWindow);
 
-		std::uint32_t GetWidth() const;
-		std::uint32_t GetHeight() const;
+		[[nodiscard]] std::uint32_t GetWidth() const;
+		[[nodiscard]] std::uint32_t GetHeight() const;
 
 		[[nodiscard]] SDL_Window* GetSDLWindow() const;
 		[[nodiscard]] HWND GetHWND() const;

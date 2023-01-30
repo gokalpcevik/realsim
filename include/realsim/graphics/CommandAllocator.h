@@ -26,7 +26,7 @@ namespace RSim::Graphics
 
 		~CommandAllocatorPool();
 
-		Microsoft::WRL::ComPtr<ID3D12CommandAllocator> RequestAllocator(uint64_t CompletedFenceValue);
+		Microsoft::WRL::ComPtr<ID3D12CommandAllocator> RequestCommandAllocator(uint64_t CompletedFenceValue);
 
 		void DiscardAllocator(uint64_t FenceValue, Microsoft::WRL::ComPtr<ID3D12CommandAllocator> const& CommandAllocator);
 
