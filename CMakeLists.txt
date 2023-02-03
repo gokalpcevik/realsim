@@ -54,6 +54,7 @@ set(SOURCES          # All .cpp files in src/
     src/realsim/graphics/CommandAllocator.cpp
     src/realsim/graphics/LinearAllocator.cpp
     src/realsim/graphics/CommandQueue.cpp
+    src/realsim/graphics/ShaderReflection.cpp
     src/realsim/graphics/Exception.cpp
     src/realsim/graphics/Helpers.cpp
 )
