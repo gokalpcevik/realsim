@@ -45,6 +45,7 @@ set(SOURCES          # All .cpp files in src/
 
     src/realsim/graphics/RealSimGraphics.cpp
     src/realsim/graphics/GraphicsDevice.cpp
+    src/realsim/graphics/GraphicsResource.cpp
     src/realsim/graphics/SwapChain.cpp
     src/realsim/graphics/Renderer.cpp
     src/realsim/graphics/RendererConfiguration.cpp
