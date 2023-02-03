@@ -47,8 +47,7 @@ namespace RSim::Graphics
 		[[nodiscard]] std::unique_ptr<MemoryAllocation> CreateResource(D3D12MA::ALLOCATION_DESC const* pAllocDesc,
 		                                                               D3D12_RESOURCE_DESC const* pResourceDesc, 
 		                                                               D3D12_RESOURCE_STATES InitialResourceState, 
-		                                                               D3D12_CLEAR_VALUE const* pOptimizedClearValue,
-		                                                               ID3D12Resource* pResource = nullptr) const;
+		                                                               D3D12_CLEAR_VALUE const* pOptimizedClearValue) const;
 
 		/**
 		 * \brief Logs the information about the current budget.

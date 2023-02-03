@@ -43,10 +43,9 @@ namespace RSim::Graphics
 	}
 
 	std::unique_ptr<MemoryAllocation> MemoryAllocator::CreateResource(D3D12MA::ALLOCATION_DESC const* pAllocDesc,
-		D3D12_RESOURCE_DESC const* pResourceDesc, 
+		D3D12_RESOURCE_DESC const* pResourceDesc,
 		D3D12_RESOURCE_STATES InitialResourceState,
-		D3D12_CLEAR_VALUE const* pOptimizedClearValue,
-		ID3D12Resource* pResource) const
+		D3D12_CLEAR_VALUE const* pOptimizedClearValue) const
 	{
 		D3D12MA::Allocation* allocation{nullptr};
 
