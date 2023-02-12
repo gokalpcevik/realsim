@@ -2,7 +2,7 @@
 
 namespace RSim::Core
 {
-	Window::Window(WindowDescriptor const& desc)
+	Window::Window(WindowDescription const& desc)
 	{
 		m_SDL_Window = SDL_CreateWindow(desc.Title.c_str(), desc.X, desc.Y, desc.Width, desc.Height, desc.Flags);
 		RSIM_ASSERTM(m_SDL_Window != nullptr, "SDL_CreateWindow() has returned an invalid window.");
@@ -23,6 +23,11 @@ namespace RSim::Core
 				break;
 			// Handle other window events when we implement a renderer
 		}
+	}
+
+	void Window::SetTitle(std::string const& window) const
+	{
+		SDL_SetWindowTitle(m_SDL_Window, window.c_str());
 	}
 
 	std::uint32_t Window::GetWidth() const
@@ -51,5 +56,35 @@ namespace RSim::Core
 		SDL_GetWindowWMInfo(m_SDL_Window, &info);
 		HWND hwnd = info.info.win.window;
 		return hwnd;
+	}
+
+	bool Window::IsMinimized() const
+	{
+		return SDL_GetWindowFlags(m_SDL_Window) & SDL_WINDOW_MINIMIZED;
+	}
+
+	bool Window::IsMaximized() const
+	{
+		return SDL_GetWindowFlags(m_SDL_Window) & SDL_WINDOW_MAXIMIZED;
+	}
+
+	bool Window::HasInputFocus() const
+	{
+		return SDL_GetWindowFlags(m_SDL_Window) & SDL_WINDOW_INPUT_FOCUS;
+	}
+
+	bool Window::HasGrabbedInput() const
+	{
+		return SDL_GetWindowFlags(m_SDL_Window) & SDL_WINDOW_INPUT_GRABBED;
+	}
+
+	bool Window::HasMouseFocus() const
+	{
+		return SDL_GetWindowFlags(m_SDL_Window) & SDL_WINDOW_MOUSE_FOCUS;
+	}
+
+	bool Window::HasGrabbedMouse() const
+	{
+		return SDL_GetWindowFlags(m_SDL_Window) & SDL_WINDOW_MOUSE_GRABBED;
 	}
 }

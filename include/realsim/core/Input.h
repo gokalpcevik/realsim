@@ -5,6 +5,10 @@
 
 namespace RSim::Core
 {
+
+	/**
+	 * \brief A simple input class making use of SDL's functionality.
+	 */
 	class Input final
 	{
 	public:

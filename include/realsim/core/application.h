@@ -4,6 +4,7 @@
 #include <vector>
 #include <memory>
 
+
 #include "realsim/RealSim.h"
 #include "realsim/core/Window.h"
 #include "realsim/core/Input.h"
@@ -11,6 +12,13 @@
 
 #include "realsim/graphics/Renderer.h"
 #include "realsim/graphics/RealSimGraphics.h"
+#include "realsim/graphics/FreeListAllocator.h"
+
+#include "realsim/ecs/Scene.h"
+#include "realsim/ecs/Entity.h"
+#include "realsim/ecs/PerspectiveCameraComponent.h"
+#include "realsim/ecs/CommonComponents.h"
+#include "realsim/ecs/Link.h"
 
 #include "RealSimConfig.h"
 
@@ -22,6 +30,7 @@ namespace RSim::Core
 {
 	class Application
 	{
+	public:
         struct UpdateStatistics
         {
             Uint64 m_LastTickCount = 0ULL;
@@ -45,19 +54,20 @@ namespace RSim::Core
 		explicit Application(CommandLineArgs args);
         virtual ~Application() = default;
 
-		return_code Run();
+		ReturnCode Run();
         virtual void Shutdown();
 
         void SetMainWindow(std::unique_ptr<Window> window);
         void AddWindow(std::unique_ptr<Window> window);
 
     protected:
-        virtual return_code OnInit();
+        virtual ReturnCode OnInit();
         virtual void OnUpdate();
     private:
         void Handle_SDL_Events(SDL_Event const& e);
         void CalculateUpdateStatistics();
         static void LogLibraryVersion();
+        static void RSIM_SetConsoleTitle(LPCTSTR Title);
 	protected:
         CommandLineArgs m_StartArgs{};
         bool m_Running = true;
@@ -67,5 +77,12 @@ namespace RSim::Core
         std::vector<std::unique_ptr<Window>> m_OtherWindows;
 
         std::unique_ptr<GFX::Renderer> m_Renderer;
+
+        std::unique_ptr<ECS::Scene> m_Scene;
+        ECS::Entity m_Box;
+        ECS::Entity m_Camera;
+        ECS::PerspectiveCameraComponent* pCamera;
+
+        float ZPosition = -3.0f;
 	};
 }
