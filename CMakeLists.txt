@@ -52,11 +52,23 @@ set(SOURCES          # All .cpp files in src/
     src/realsim/graphics/MemoryAllocator.cpp
     src/realsim/graphics/MemoryAllocation.cpp
     src/realsim/graphics/CommandAllocator.cpp
-    src/realsim/graphics/LinearAllocator.cpp
+    src/realsim/graphics/FreeListAllocator.cpp
+    src/realsim/graphics/UploadBuffer.cpp
     src/realsim/graphics/CommandQueue.cpp
+    src/realsim/graphics/ShaderCompiler.cpp
+    src/realsim/graphics/Shader.cpp
+    src/realsim/graphics/RootSignature.cpp
     src/realsim/graphics/ShaderReflection.cpp
+    src/realsim/graphics/RootSignatureFileDeserializer.cpp
     src/realsim/graphics/Exception.cpp
     src/realsim/graphics/Helpers.cpp
+    src/realsim/math/Alignment.cpp
+    src/realsim/ecs/Entity.cpp
+    src/realsim/ecs/Scene.cpp
+    src/realsim/ecs/CommonComponents.cpp
+    src/realsim/ecs/Link.cpp
+    src/realsim/serialization/YAML.cpp
+    src/realsim/utils/StringUtils.cpp
 )
 set(TESTFILES        # All .cpp files in tests/
     tests/main.cpp
@@ -82,6 +94,8 @@ find_package(fmt CONFIG REQUIRED)
 find_package(directxtk12 CONFIG REQUIRED)
 find_package(directxmath CONFIG REQUIRED)
 find_package(d3d12-memory-allocator CONFIG REQUIRED)
+find_package(yaml-cpp CONFIG REQUIRED)
+find_package(EnTT CONFIG REQUIRED)
 
 find_path(D3DX12_INCLUDE_DIRS "d3dx12.h")
 
@@ -99,6 +113,8 @@ target_link_libraries(${LIBRARY_NAME} PUBLIC
         Eigen3::Eigen
         fmt::fmt
         unofficial::d3d12-memory-allocator
+        yaml-cpp
+        EnTT::EnTT
         )
 
 target_include_directories(${LIBRARY_NAME} PUBLIC ${D3D12X_INCLUDE_DIRS})
