@@ -3,5 +3,5 @@
 
 namespace RSim
 {
-    using return_code = std::int32_t;
+    using ReturnCode = std::int32_t;
 }
