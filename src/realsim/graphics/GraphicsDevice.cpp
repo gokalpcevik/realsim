@@ -61,10 +61,10 @@ namespace RSim::Graphics
 
             	wcstombs_s(&charsConverted, adapterDescriptionPtr, outputSize, inputW, 128);
 
-            	rsim_trace("Description: {0}", adapterDescriptionPtr);
+            	rsim_trace("Description : {0}", adapterDescriptionPtr);
                 delete[] adapterDescriptionPtr;
 
-            	rsim_trace("Dedicated Video Memory: {0}MB", desc.DedicatedVideoMemory / 1024 / 1024);
+            	rsim_trace("Dedicated Video Memory : {0}MB", desc.DedicatedVideoMemory / 1024 / 1024);
 
             	break;
             }

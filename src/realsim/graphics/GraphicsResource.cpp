@@ -5,7 +5,7 @@ namespace RSim::Graphics
 	GraphicsResource::GraphicsResource()
 		:
 		m_UsageState(D3D12_RESOURCE_STATE_COMMON),
-		m_GPUVirtualAddress(G_GPU_VIRTUAL_ADDRESS_NULL),
+		m_GPUVirtualAddress(GPU_VIRTUAL_ADDRESS_NULL),
 		m_IsReady(false)
 	{
 	}
@@ -14,7 +14,7 @@ namespace RSim::Graphics
 		:
 		m_Resource(pResource),
 		m_UsageState(CurrentState),
-		m_GPUVirtualAddress(G_GPU_VIRTUAL_ADDRESS_NULL),
+		m_GPUVirtualAddress(GPU_VIRTUAL_ADDRESS_NULL),
 		m_IsReady(false)
 	{
 	}
@@ -22,7 +22,7 @@ namespace RSim::Graphics
 	GraphicsResource::~GraphicsResource()
 	{
 		m_Resource = nullptr;
-		m_GPUVirtualAddress = G_GPU_VIRTUAL_ADDRESS_NULL;
+		m_GPUVirtualAddress = GPU_VIRTUAL_ADDRESS_NULL;
 	}
 
 	VertexBuffer::VertexBuffer(ID3D12Resource* pResource, D3D12_RESOURCE_STATES UsageState, uint32_t VertexStride,
@@ -38,7 +38,7 @@ namespace RSim::Graphics
 	VertexBuffer::~VertexBuffer()
 	{
 		m_Resource = nullptr;
-		m_GPUVirtualAddress = G_GPU_VIRTUAL_ADDRESS_NULL;
+		m_GPUVirtualAddress = GPU_VIRTUAL_ADDRESS_NULL;
 	}
 
 	IndexBuffer::IndexBuffer(ID3D12Resource* pResource, D3D12_RESOURCE_STATES UsageState, uint32_t SizeInBytes,
@@ -55,7 +55,7 @@ namespace RSim::Graphics
 	IndexBuffer::~IndexBuffer()
 	{
 		m_Resource = nullptr;
-		m_GPUVirtualAddress = G_GPU_VIRTUAL_ADDRESS_NULL;
+		m_GPUVirtualAddress = GPU_VIRTUAL_ADDRESS_NULL;
 	}
 
 	ConstantBuffer::ConstantBuffer(ID3D12Resource* pResource, D3D12_RESOURCE_STATES UsageState, uint32_t BufferSize,

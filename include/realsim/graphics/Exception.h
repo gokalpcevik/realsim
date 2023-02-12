@@ -30,5 +30,4 @@ namespace RSim::Graphics
             throw ComException(hr);
         }
     }
-
 }

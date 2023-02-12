@@ -35,5 +35,6 @@ namespace RSim::Graphics
 
     private:
         Microsoft::WRL::ComPtr<IDXGISwapChain1> m_DXGISwapChain;
+        GraphicsDevice const& m_Device;
     };
 }

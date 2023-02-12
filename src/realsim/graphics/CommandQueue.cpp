@@ -89,7 +89,7 @@ namespace RSim::Graphics
 	{
 		std::lock_guard lock(m_FenceMutex);
 
-		ThrowIfFailed(((ID3D12GraphicsCommandList1*)pCommandList)->Close());
+		ThrowIfFailed(static_cast<ID3D12GraphicsCommandList1*>(pCommandList)->Close());
 
 		m_CmdQueue->ExecuteCommandLists(1, &pCommandList);
 
@@ -133,7 +133,7 @@ namespace RSim::Graphics
 
 	void CommandListController::WaitForFence(uint64_t FenceValue) const
 	{
-		CommandQueue& queue = GetQueue((D3D12_COMMAND_LIST_TYPE)(FenceValue >> 56));
+		CommandQueue& queue = GetQueue(static_cast<D3D12_COMMAND_LIST_TYPE>(FenceValue >> 56));
 		queue.WaitForFence(FenceValue);
 	}
 

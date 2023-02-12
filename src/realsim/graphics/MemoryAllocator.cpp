@@ -42,10 +42,11 @@ namespace RSim::Graphics
 			m_Allocator->Release();
 	}
 
+
 	std::unique_ptr<MemoryAllocation> MemoryAllocator::CreateResource(D3D12MA::ALLOCATION_DESC const* pAllocDesc,
-		D3D12_RESOURCE_DESC const* pResourceDesc,
-		D3D12_RESOURCE_STATES InitialResourceState,
-		D3D12_CLEAR_VALUE const* pOptimizedClearValue) const
+	                                                                  D3D12_RESOURCE_DESC const* pResourceDesc,
+	                                                                  D3D12_RESOURCE_STATES InitialResourceState,
+	                                                                  D3D12_CLEAR_VALUE const* pOptimizedClearValue) const
 	{
 		D3D12MA::Allocation* allocation{nullptr};
 
@@ -66,7 +67,7 @@ namespace RSim::Graphics
 
 		m_Allocator->GetBudget(&GPUBudget, &CPUBudget);
 
-		rsim_trace("Video Memory Budget:{} MB, CPU Memory Budget:{} MB",
+		rsim_info("Video Memory Budget : {} MB, CPU Memory Budget : {} MB",
 			GPUBudget.BudgetBytes / 1024 / 1024,
 			CPUBudget.BudgetBytes / 1024 / 1024);
 	}

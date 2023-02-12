@@ -29,6 +29,10 @@ namespace RSim::Graphics
 		[[nodiscard]] Microsoft::WRL::ComPtr<IDXGIAdapter1> const& GetAdapter1() const;
 		[[nodiscard]] IDXGIAdapter1* GetAdapter1Raw() const;
 
+		// This operator overload may be problematic in some cases but since typing Device.GetDevice2()->....... is long and device is frequently used,
+		// I think it is justified.
+		Microsoft::WRL::ComPtr<ID3D12Device2> const& operator->() const { return m_Device; }
+
 		/**
 		 * \brief Checks for tearing support in the factory
 		 */

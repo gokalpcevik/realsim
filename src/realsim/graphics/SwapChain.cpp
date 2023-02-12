@@ -2,7 +2,8 @@
 
 namespace RSim::Graphics
 {
-	SwapChain::SwapChain(IDXGIFactory3* pDXGIFactory, ID3D12CommandQueue* pCmdQueue, Core::Window const* window, GraphicsDevice const& device)
+	SwapChain::SwapChain(IDXGIFactory3* pDXGIFactory, ID3D12CommandQueue* pCmdQueue, Core::Window const* window,
+	                     GraphicsDevice const& device) : m_Device(device)
 	{
 		HWND hwnd = window->GetHWND();
 
@@ -20,16 +21,16 @@ namespace RSim::Graphics
 		swapChainDesc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
 
 		bool tearingSupported = device.IsTearingSupported();
-		rsim_trace("GraphicsDevice::IsTearingSupported -> {0}", tearingSupported);
+		rsim_trace("Tearing Supported : {0}", tearingSupported);
 		swapChainDesc.Flags = tearingSupported ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
 
 		auto const& pDevice = device.GetDevice2();
 		HRESULT hr = pDXGIFactory->CreateSwapChainForHwnd(pCmdQueue,
-			hwnd,
-			&swapChainDesc, 
-			nullptr, 
-			nullptr,
-			&m_DXGISwapChain);
+		                                                  hwnd,
+		                                                  &swapChainDesc,
+		                                                  nullptr,
+		                                                  nullptr,
+		                                                  &m_DXGISwapChain);
 		if (FAILED(hr))
 		{
 			rsim_error("Call to IDXGIFactory::CreateSwapChainForHwnd failed!");
@@ -65,8 +66,8 @@ namespace RSim::Graphics
 	}
 
 	void SwapChain::CreateBackBuffersFromSwapChain(ID3D12Device* pDevice,
-		std::array<ID3D12Resource*, NumFramesInFlight>& pBackBufferResources,
-		ID3D12DescriptorHeap* pDescHeap) const
+	                                               std::array<ID3D12Resource*, NumFramesInFlight>& pBackBufferResources,
+	                                               ID3D12DescriptorHeap* pDescHeap) const
 	{
 		// Back Buffer Resources
 		CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(pDescHeap->GetCPUDescriptorHandleForHeapStart());
@@ -75,7 +76,8 @@ namespace RSim::Graphics
 
 		for (UINT i = 0; i < NumFramesInFlight; ++i)
 		{
-			ThrowIfFailed(m_DXGISwapChain->GetBuffer(i, __uuidof(ID3D12Resource), reinterpret_cast<void**>(&pBackBufferResources[i])));
+			ThrowIfFailed(m_DXGISwapChain->GetBuffer(i, __uuidof(ID3D12Resource),
+			                                         reinterpret_cast<void**>(&pBackBufferResources[i])));
 
 			pDevice->CreateRenderTargetView(pBackBufferResources[i], nullptr, rtvHandle);
 			rtvHandle.Offset(static_cast<INT>(DescriptorHandleIncrementSizes.RTVIncrementSize));
@@ -84,6 +86,29 @@ namespace RSim::Graphics
 
 	void SwapChain::Present(UINT syncInterval, UINT presentFlags) const
 	{
-		m_DXGISwapChain->Present(syncInterval, presentFlags);
+		HRESULT hr = m_DXGISwapChain->Present(syncInterval, presentFlags);
+
+		switch (hr)
+		{
+		default: break;
+		case DXGI_ERROR_DEVICE_RESET:
+			{
+				rsim_error("Error calling SwapChain::Present(). The device failed due to a badly formed command.");
+				throw ComException(hr);
+			}
+		case DXGI_ERROR_DEVICE_HUNG:
+			{
+				rsim_error(
+					"Error calling SwapChain::Present(). The application's device failed due to badly formed commands sent by the application.");
+				throw ComException(hr);
+			}
+		case DXGI_ERROR_DEVICE_REMOVED:
+			{
+				rsim_error(
+					"Error calling SwapChain::Present(). The video card has been physically removed from the system, or a driver upgrade for the video card has occurred. ");
+				hr = m_Device->GetDeviceRemovedReason();
+				throw ComException(hr);
+			}
+		}
 	}
 }

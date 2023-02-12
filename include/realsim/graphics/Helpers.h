@@ -3,7 +3,7 @@
 
 namespace RSim::Graphics
 {
-	struct DescriptorHandleIncrementSize
+	struct DescriptorSize
 	{
 		UINT RTVIncrementSize;
 		UINT DSVIncrementSize;
@@ -15,5 +15,5 @@ namespace RSim::Graphics
 	 * \brief Returns the descriptor handle increment sizes, as a struct.
 	 * \param pDevice The device pointer.
 	 */
-	DescriptorHandleIncrementSize GetDescriptorHandleIncrementSizes(ID3D12Device* pDevice);
+	DescriptorSize GetDescriptorHandleIncrementSizes(ID3D12Device* pDevice);
 }
