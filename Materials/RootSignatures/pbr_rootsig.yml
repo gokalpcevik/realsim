@@ -1,0 +1,84 @@
+# Written by Gökalp at 9/10/2022
+
+# Parameter types can be of the following:
+# descriptor_table
+# 32bit_constants
+# constant_buffer_view
+# shader_resource_view
+# unordered_access_view
+
+# Visibility can be of the following:
+# all
+# amplification
+# domain
+# geometry
+# hull 
+# mesh
+# pixel
+# vertex
+
+# Descriptor range types can be of the following:
+# descriptor_range_cbv
+# descriptor_range_sampler
+# descriptor_range_srv
+# descriptor_range_uav
+
+# Root Descriptor Flags can be of the following:
+# none
+# data_static
+# data_static_while_set_at_execute
+# data_volatile
+
+# Descriptor Range Flags can be of the following:
+# none
+# data_static
+# data_static_while_set_at_execute
+# data_volatile
+# descriptors_static_keeping_buffer_bounds_checks
+# descriptors_volatile
+
+root_signature:
+    root_signature_name: "Lambertian Surface Root Signature"
+    root_signature_flags:
+                    - allow_input_assembler_input_layout
+                    - deny_hull_shader_root_access
+                    - deny_domain_shader_root_access
+                    - deny_geometry_shader_root_access
+    root_parameters:
+      - parameter_name: "lights_root_parameter"
+        type: descriptor_table
+        visibility: pixel   
+        descriptor_ranges:
+          - range_name: "lights_range"
+            num_descriptors: 32
+            base_shader_register: 1
+            register_space: 0
+            descriptor_range_type: descriptor_range_cbv
+            descriptor_range_flags: none
+
+      - parameter_name: "surface_properties_root_parameter"
+        type: 32bit_constants 
+        visibility: pixel
+        num_32_bit_val: 3 # Metallic(float) Roughness(float) AmbientOcclusion(float)
+        shader_register: 2
+        register_space: 0
+
+      - parameter_name: "mvp_model_matrix_root_parameter"
+        type: 32bit_constants
+        visibility: vertex
+        num_32_bit_val: 32 # Model-View-Projection Matrix + Model Matrix = 32 floats
+        shader_register: 0
+        register_space: 0
+
+      - parameter_name: "camera_root_parameter"
+        type: 32bit_constants
+        visibility: pixel
+        num_32_bit_val: 3 # 3 Floats for the camera position
+        shader_register: 3
+        register_space: 0
+
+      
+
+
+      
+      
