@@ -17,6 +17,8 @@ namespace RSim::ECS
 		[[nodiscard]] entt::entity GetLastChild() const { return LastChild; }
 		[[nodiscard]] entt::entity GetParent() const { return Parent; }
 		[[nodiscard]] std::size_t GetNumChildren() const { return NumChildren; }
+
+		static constexpr std::size_t InvalidChildIndex() { return std::numeric_limits<std::size_t>::max(); }
 	private:
 		entt::entity FirstChild{entt::null};
 		entt::entity PreviousSibling{entt::null};
@@ -27,6 +29,6 @@ namespace RSim::ECS
 		 */
 		entt::entity Parent{entt::null};
 		std::size_t NumChildren = 0;
-		std::size_t ChildIndex = 0;	
+		std::size_t ChildIndex = InvalidChildIndex();	
 	};
 }

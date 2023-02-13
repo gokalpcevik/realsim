@@ -3,6 +3,7 @@
 #include <DirectXMath.h>
 #include <utility>
 #include <string>
+#include <string_view>
 #include <Eigen/Eigen>
 
 namespace RSim::ECS
@@ -35,5 +36,15 @@ namespace RSim::ECS
         DirectX::XMFLOAT2 ScreenPosition{0.0f,0.0f};
         DirectX::XMFLOAT4 Color{0.5f,0.5f,0.5f,1.0f};
         float Rotation{ 0.0f };
+    };
+
+    struct NameComponent
+    {
+        NameComponent() = default;
+        NameComponent(std::string name) : Name(std::move(name)) {}
+
+        operator std::string_view() const { return std::string_view{Name}; }
+
+        std::string Name = "Unnamed Entity";
     };
 }

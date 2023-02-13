@@ -1,9 +1,7 @@
 #pragma once
 
 #include <entt/entt.hpp>
-
 #include "realsim/ecs/CommonComponents.h"
-#include "realsim/ecs/Link.h"
 
 namespace RSim::ECS
 {
@@ -12,7 +10,7 @@ namespace RSim::ECS
     class Scene
     {
     public:
-        Scene() = default;
+        Scene();
 
         Scene(Scene &&) = default;
 
@@ -23,6 +21,8 @@ namespace RSim::ECS
         [[nodiscard]] size_t GetCreatedEntityCount() const;
 
     	auto CreateEntity() -> Entity;
+
+        auto FromEnTT(entt::entity entity) -> Entity;
 
         void Destroy(Entity entity);
 
@@ -44,6 +44,10 @@ namespace RSim::ECS
         auto DestroyAllComponentsOfType() -> void;
 
     	void Shutdown();
+    private:
+        void OnDestroyLink(entt::registry& registry, entt::entity entity);
+
+
     private:
         entt::registry m_Registry{};
     };

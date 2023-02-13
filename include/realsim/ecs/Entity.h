@@ -8,10 +8,11 @@
 #include "realsim/core/Assert.h"
 
 #include "realsim/ecs/Scene.h"
-#include "realsim/ecs/Link.h"
 
 namespace RSim::ECS
 {
+    struct Link;
+
     class Entity
     {
     public:
@@ -19,7 +20,14 @@ namespace RSim::ECS
 
         Entity(Scene *pScene, entt::entity entity);
 
-        static Entity Null() { return { nullptr,entt::null }; }
+        bool operator==(Entity const& rhs) const { return rhs.m_Scene == m_Scene && rhs.m_EntityHandle == m_EntityHandle; }
+
+        /**
+    	 * \brief Returns a Null entity. 
+    	 * \return A null Entity.
+    	 */
+    	static Entity Null() { return { nullptr,entt::null }; }
+
 
         template<typename T>
         auto GetComponent() -> T &;
@@ -27,6 +35,18 @@ namespace RSim::ECS
         template<typename T, typename... Args>
         auto AddComponent(Args &&...args) -> T &;
 
+        [[nodiscard]] bool IsNull() const;
+
+        /*
+         * This child-parent API is most likely not thread-safe at the moment.
+         */
+
+        [[nodiscard]] Entity GetParent() const;
+        [[nodiscard]] Entity GetTopParent() const;
+        [[nodiscard]] Entity GetNextSibling() const;
+        [[nodiscard]] Entity GetPreviousSibling() const;
+        [[nodiscard]] Entity GetFirstChild() const;
+        [[nodiscard]] Entity GetLastChild() const;
         /**
     	 * \return The parent entity(*this) with the updated link.
     	 */
@@ -38,9 +58,17 @@ namespace RSim::ECS
          */
         Entity RemoveChild(Entity Child);
 
+        Entity GetChildAt(std::size_t Index);
+
+        void RemoveChildAt(std::size_t Index);
+        void TryRemoveChildAt(std::size_t Index);
+
         [[nodiscard]] TransformComponent& GetLocalTransform();
         [[nodiscard]] TransformComponent const& GetLocalTransform() const;
+        [[nodiscard]] NameComponent const& GetName() const;
         [[nodiscard]] Link const& GetLink() const;
+
+        void SetName(std::string Name) const;
 
         template<typename T>
         void RemoveComponent() const;
@@ -49,7 +77,6 @@ namespace RSim::ECS
         {
             return m_EntityHandle;
         }
-
     private:
         entt::entity m_EntityHandle{entt::null};
         Scene *m_Scene{nullptr};
