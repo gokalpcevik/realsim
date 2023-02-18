@@ -13,6 +13,13 @@ namespace RSim::ECS
 {
     struct Link;
 
+    /**
+     * \brief 
+     * ----------------------------------------------------------\n
+     * <b>Example usages of ECS hierarchy:</b>\n
+     * Parent.AddChild(Child0).AddChild(Child1).AddChild(Child2); \n
+     * Parent.RemoveChild(Child0).AddChild(Child4).RemoveChild(Child1);
+     */
     class Entity
     {
     public:
@@ -22,12 +29,7 @@ namespace RSim::ECS
 
         bool operator==(Entity const& rhs) const { return rhs.m_Scene == m_Scene && rhs.m_EntityHandle == m_EntityHandle; }
 
-        /**
-    	 * \brief Returns a Null entity. 
-    	 * \return A null Entity.
-    	 */
-    	static Entity Null() { return { nullptr,entt::null }; }
-
+        static Entity const Null;
 
         template<typename T>
         auto GetComponent() -> T &;
@@ -36,10 +38,6 @@ namespace RSim::ECS
         auto AddComponent(Args &&...args) -> T &;
 
         [[nodiscard]] bool IsNull() const;
-
-        /*
-         * This child-parent API is most likely not thread-safe at the moment.
-         */
 
         [[nodiscard]] Entity GetParent() const;
         [[nodiscard]] Entity GetTopParent() const;
@@ -59,6 +57,7 @@ namespace RSim::ECS
         Entity RemoveChild(Entity Child);
 
         Entity GetChildAt(std::size_t Index);
+        Entity GetChildByName(std::string_view Name);
 
         void RemoveChildAt(std::size_t Index);
         void TryRemoveChildAt(std::size_t Index);

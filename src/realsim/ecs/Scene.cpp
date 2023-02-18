@@ -56,7 +56,7 @@ namespace RSim::ECS
     {
         Entity entity_{ this , entity };
         Entity parent = entity_.GetParent();
-        if (parent != Entity::Null()) parent.RemoveChild(entity_);
+        if (parent != Entity::Null) parent.RemoveChild(entity_);
 
         Link const& parentLink = entity_.GetLink();
         entt::entity PreviousSibling{ parentLink.GetFirstChild() };

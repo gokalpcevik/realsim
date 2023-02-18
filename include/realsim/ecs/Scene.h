@@ -41,7 +41,7 @@ namespace RSim::ECS
         auto RemoveComponent(entt::entity entity) -> void;
 
         template<typename T>
-        auto DestroyAllComponentsOfType() -> void;
+        auto Clear() -> void;
 
     	void Shutdown();
     private:
@@ -77,7 +77,7 @@ namespace RSim::ECS
     }
 
     template <typename T>
-    auto Scene::DestroyAllComponentsOfType() -> void
+    auto Scene::Clear() -> void
     {
         m_Registry.clear<T>();
     }

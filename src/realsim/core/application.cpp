@@ -1,6 +1,5 @@
 ﻿#include "realsim/core/Application.h"
 
-
 namespace RSim::Core
 {
 	auto Application::UpdateStatistics::GetFramesPerSecond() const -> float
@@ -35,28 +34,33 @@ namespace RSim::Core
 			rsim_error("Initialization has failed!");
 			return init;
 		}
-
 		SDL_Event e;
 
 		m_Scene = std::make_unique<ECS::Scene>();
 		m_Camera = m_Scene->CreateEntity();
+		m_Camera.SetName("Scene Primary Camera");
 		pCamera = &m_Camera.AddComponent<ECS::PerspectiveCameraComponent>(true);
 		pCamera->NearZ = 0.01f;
-		m_Box = m_Scene->CreateEntity();
-		auto& BC = m_Box.AddComponent<ECS::BoxComponent>();
-		BC.Color = { 0.6f,0.2f,0.2f,1.0f };
-		BC.ScreenPosition = { (float)m_MainWindow->GetWidth() / 2.0f,(float)m_MainWindow->GetHeight() / 2.0f };
-
 		pCamera->SetViewMatrix(DirectX::XMMatrixLookAtLH(
 			DirectX::XMVectorSet(0.0f, 0.0f, ZPosition, 1.0f),
 			DirectX::XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f),
 			DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f)));
 
+		m_Box = m_Scene->CreateEntity();
+		m_Box2 = m_Scene->CreateEntity();
+		auto& BC = m_Box.AddComponent<ECS::BoxComponent>();
+		BC.Color = { 0.6f,0.2f,0.2f,1.0f };
+		m_Box.GetLocalTransform().Translation.x -= 1.5f;
+
+		auto& BC2 = m_Box2.AddComponent<ECS::BoxComponent>();
+		BC2.Color = { 0.6f,0.2f,0.2f,1.0f };
+		m_Box2.GetLocalTransform().Translation.x += 1.5f;
+
 		while (m_Running)
 		{
 			this->CalculateUpdateStatistics();
 
-			m_MainWindow->SetTitle(fmt::format("RealSim Interactive - FPS:{0:.1f}", m_UpdateStats.GetFramesPerSecond()));
+			m_MainWindow->SetTitle(fmt::format("RealSim Interactive - FPS:{0:.2f}",m_UpdateStats.GetFramesPerSecond()));
 
 			while(SDL_PollEvent(&e) != 0)
 			{
@@ -115,12 +119,16 @@ namespace RSim::Core
 				DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f)));
 		}
 
-
 		auto& BC = m_Box.GetComponent<ECS::BoxComponent>();
-
+		auto& BC2 = m_Box2.GetComponent<ECS::BoxComponent>();
+		
 		BC.Color.x = (float)Input::GetCursorPosition()[0] / (float)m_MainWindow->GetWidth();
 		BC.Color.y = (float)Input::GetCursorPosition()[1] / (float)m_MainWindow->GetHeight();
 		BC.Color.z = 1.0f - BC.Color.x;
+
+		BC2.Color.x = 1.0f - BC.Color.x;
+		BC2.Color.y = 1.0f - BC.Color.y;
+		BC2.Color.z = 1.0f - BC.Color.z;
 	}
 
 	void Application::Handle_SDL_Events(SDL_Event const& e)

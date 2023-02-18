@@ -1,10 +1,12 @@
 #include "realsim/ecs/Entity.h"
 #include "realsim/ecs/Link.h"
 
-#define FROM_ENTT(EnTTHandle) RSim::ECS::Entity{m_Scene, (EnTTHandle)}
+#define FromEnTT(EnTTHandle) RSim::ECS::Entity{m_Scene, (EnTTHandle)}
 
 namespace RSim::ECS
 {
+    Entity const Entity::Null = { nullptr,entt::null };
+
     Entity::Entity(Scene *pScene, entt::entity entity) : m_EntityHandle(entity), m_Scene(pScene)
     {
 
@@ -12,13 +14,13 @@ namespace RSim::ECS
 
     bool Entity::IsNull() const
     {
-        return *this == Null();
+        return *this == Entity::Null;
     }
 
     Entity Entity::GetParent() const
     {
         Link const& link = GetLink();
-        return FROM_ENTT(link.Parent);
+        return FromEnTT(link.Parent);
     }
 
     Entity Entity::GetTopParent() const
@@ -30,31 +32,31 @@ namespace RSim::ECS
             link = m_Scene->GetComponent<Link>(Parent);
             Parent = link.Parent;
         }
-        return FROM_ENTT(Parent);
+        return FromEnTT(Parent);
     }
 
     Entity Entity::GetNextSibling() const
     {
         Link const& link = GetLink();
-        return FROM_ENTT(link.NextSibling);
+        return FromEnTT(link.NextSibling);
     }
 
     Entity Entity::GetPreviousSibling() const
     {
         Link const& link = GetLink();
-        return FROM_ENTT(link.PreviousSibling);
+        return FromEnTT(link.PreviousSibling);
     }
 
     Entity Entity::GetFirstChild() const
     {
         Link const& link = GetLink();
-        return FROM_ENTT(link.FirstChild);
+        return FromEnTT(link.FirstChild);
     }
 
     Entity Entity::GetLastChild() const
     {
         Link const& link = GetLink();
-        return FROM_ENTT(link.LastChild);
+        return FromEnTT(link.LastChild);
     }
 
     Entity Entity::AddChild(Entity Child)
@@ -67,27 +69,35 @@ namespace RSim::ECS
         
         if(parentLink.NumChildren == 0)
         {
+            // The parent does not have any children until now, so set the first and last child to the added child
             parentLink.FirstChild = Child;
             parentLink.LastChild = Child;
+            // Since we'll only have one child, siblings do not exist
             parentLink.PreviousSibling = entt::null;
             parentLink.NextSibling = entt::null;
+            // Increase the # children and set the child index to zero
             parentLink.NumChildren++;
             childLink.ChildIndex = 0;
         }
         else
         {
         	entt::entity PreviousSibling{ parentLink.FirstChild};
-
             do
             {
                 RSIM_ASSERTM(PreviousSibling != Child, "The entity you are trying to link is already a child.");
                 PreviousSibling = m_Scene->GetComponent<Link>(PreviousSibling).NextSibling;
             }
             while (PreviousSibling != entt::null);
-            m_Scene->GetComponent<Link>(PreviousSibling).NextSibling = Child;
+            Link& PrevSiblingLink = m_Scene->GetComponent<Link>(PreviousSibling);
+            // Update the last child's next sibling to point to the added child
+        	PrevSiblingLink.NextSibling = Child;
+            // Set the added child's previous sibling as the last child
             childLink.PreviousSibling = PreviousSibling;
+            // Since we are inserting at the end, next sibling is null
         	childLink.NextSibling = entt::null;
+            // Increase the # of children
         	parentLink.NumChildren++;
+            // Since we are inserting at the end, index is # children minus one
             childLink.ChildIndex = parentLink.NumChildren - 1;
             // Parent ---------------------------------------------------
             //   |                      |                               |
@@ -155,7 +165,24 @@ namespace RSim::ECS
             PreviousSibling = childLink.NextSibling;
         }
 
-        return Null();
+        return Entity::Null;
+    }
+
+    Entity Entity::GetChildByName(std::string_view Name)
+    {
+        Link const& parentLink = GetLink();
+        entt::entity PreviousSibling{ parentLink.FirstChild };
+        while (PreviousSibling != entt::null)
+        {
+            Link& childLink = m_Scene->GetComponent<Link>(PreviousSibling);
+            auto& childName = m_Scene->GetComponent<NameComponent>(PreviousSibling);
+            if (childName.Name == Name)
+            {
+                return { m_Scene, PreviousSibling };
+            }
+            PreviousSibling = childLink.NextSibling;
+        }
+        return Entity::Null;
     }
 
     void Entity::RemoveChildAt(std::size_t Index)
@@ -167,7 +194,7 @@ namespace RSim::ECS
     void Entity::TryRemoveChildAt(std::size_t Index)
     {
         Entity const entity = GetChildAt(Index);
-        if(entity != Null())
+        if(entity != Entity::Null)
         {
             RemoveChild(entity);
         }
