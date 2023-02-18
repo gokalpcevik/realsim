@@ -6,9 +6,14 @@
 
 #include "realsim/core/Logger.h"
 #include "realsim/core/Assert.h"
+#include "realsim/graphics/Exception.h"
 
-namespace rsim::graphics
+namespace RSim::Graphics
 {
+	/**
+	 * \brief A wrapper around the ID3D12Device interface.
+	 * Adds convenience functions and contains boilerplate for device creation.
+	 */
 	class GraphicsDevice
 	{
 	public:
@@ -24,6 +29,13 @@ namespace rsim::graphics
 		[[nodiscard]] Microsoft::WRL::ComPtr<IDXGIAdapter1> const& GetAdapter1() const;
 		[[nodiscard]] IDXGIAdapter1* GetAdapter1Raw() const;
 
+		// This operator overload may be problematic in some cases but since typing Device.GetDevice2()->....... is long and device is frequently used,
+		// I think it is justified.
+		Microsoft::WRL::ComPtr<ID3D12Device2> const& operator->() const { return m_Device; }
+
+		/**
+		 * \brief Checks for tearing support in the factory
+		 */
 		[[nodiscard]] bool IsTearingSupported() const;
 
 	private:

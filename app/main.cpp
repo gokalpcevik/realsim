@@ -12,15 +12,14 @@
 #include "realsim/core/Application.h"
 #include "realsim/core/Window.h"
 
-using namespace rsim::core;
+#include <thread>
 
 int main(int argc, char** argv)
 {
-    auto* application = new Application({argc, argv});
+	auto* application = new RSim::Core::Application({argc, argv});
 
-	WindowDescriptor desc{ "RealSim", 1600, 900, SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED ,0};
-	auto window = std::make_unique<Window>(desc);
-
+    RSim::Core::WindowDescriptor desc{ "RealSim", 1366, 768, SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED,SDL_WINDOW_RESIZABLE};
+	auto window = std::make_unique<RSim::Core::Window>(desc);
 	application->SetMainWindow(std::move(window));
 	return application->Run();
 }

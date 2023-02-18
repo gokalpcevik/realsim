@@ -1,0 +1,45 @@
+# parameter_index is the index used in calling the ID3D12GraphicsCommandList::SetGraphicsRoot...(parameter_index,...);
+# parameter_name is for debug purposes(for now).
+#
+
+material:
+	material_name: "Lambertian Surface Material"
+	root_signature:
+		- root_signature_id: 0x33640DDC
+		- root_signature_path: "Materials/RootSignatures/diffuse_rootsig.yml"
+	shaders:
+		- vertex_shader_id: 0x80D170FD837F8A19
+		- pixel_shader_id: 0xE86AB77D9A936018
+	material_parameters:
+		- parameter_index: 0
+		  paramater_name: "Diffuse Map"
+		  type: texture2d
+		  texture_path: "Assets/Textures/default.dds"
+		  texture_desc:
+			format: r8g8b8a8_unorm
+			mip_levels: 0
+			sample_count: 1
+			sample_quality: 0
+			resource_flags: none
+			texture_layout: unknown
+			alignment: 0
+
+		- parameter_index: 1 
+		  parameter_name: "Sampler"
+		  type: sampler
+		  sampler_desc:
+			address_u: wrap
+			address_v: wrap
+			address_w: wrap
+			border_color: [0.0, 0.0, 0.0 ,1.0]
+			comparison_func: default
+			filter: default
+			max_anisotropy: default
+			max_lod: default
+			min_lod: default
+			mip_lod_bias: default
+		
+		- parameter_index: 2
+			parameter_name: "Shininess"
+			type: constant
+			default_value: 0.25f;

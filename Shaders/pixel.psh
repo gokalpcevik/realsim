@@ -1,0 +1,22 @@
+struct Color
+{
+    float4 Color;
+};
+
+ConstantBuffer<float4> ColorCB : register(b1);
+
+struct PixelShaderInput
+{
+    float4 Position : SV_Position;
+};
+
+struct PixelShaderOutput
+{
+    float4 Color : SV_Target;
+};
+
+
+void main(in PixelShaderInput PSIn,out PixelShaderOutput PSOut)
+{
+    PSOut.Color = normalize(PSIn.Position);
+}

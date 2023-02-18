@@ -3,8 +3,12 @@
 #include <SDL2/SDL_mouse.h>
 #include <Eigen/Eigen>
 
-namespace rsim::core
+namespace RSim::Core
 {
+
+	/**
+	 * \brief A simple input class making use of SDL's functionality.
+	 */
 	class Input final
 	{
 	public:

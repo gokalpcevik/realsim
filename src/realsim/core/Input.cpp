@@ -1,6 +1,6 @@
 #include "realsim/core/Input.h"
 
-namespace rsim::core
+namespace RSim::Core
 {
 	bool Input::IsKeyPressed(SDL_Scancode key)
 	{

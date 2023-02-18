@@ -9,9 +9,9 @@
 
 #include "Assert.h"
 
-namespace rsim::core
+namespace RSim::Core
 {
-	struct WindowDescriptor
+	struct WindowDescription
 	{
 		/**
 		 * \brief Title of the window.
@@ -43,19 +43,29 @@ namespace rsim::core
 	class Window
 	{
 	public:
-		Window(WindowDescriptor const& desc);
+		Window(WindowDescription const& desc);
 
 		Window(Window const&) = delete;
 		Window& operator=(Window const&) = delete;
 		virtual ~Window();
 
-		virtual void HandleEvent(SDL_Event const& e);
+		virtual void HandleEvent(SDL_Event const& e, bool IsMainWindow);
 
-		std::uint32_t GetWidth() const;
-		std::uint32_t GetHeight() const;
+		void SetTitle(std::string const& window) const;
+
+		[[nodiscard]] std::uint32_t GetWidth() const;
+		[[nodiscard]] std::uint32_t GetHeight() const;
 
 		[[nodiscard]] SDL_Window* GetSDLWindow() const;
 		[[nodiscard]] HWND GetHWND() const;
+
+		[[nodiscard]] bool IsMinimized() const;
+		[[nodiscard]] bool IsMaximized() const;
+		[[nodiscard]] bool HasInputFocus() const;
+		[[nodiscard]] bool HasGrabbedInput() const;
+		[[nodiscard]] bool HasMouseFocus() const;
+		[[nodiscard]] bool HasGrabbedMouse() const;
+
  	private:
 		/**
 		 * \brief Member variable(pointer) to the SDL_Window structure, allocated in the constructor with

@@ -1,6 +1,6 @@
 #include "realsim/graphics/GraphicsDevice.h"
 
-namespace rsim::graphics
+namespace RSim::Graphics
 {
 	using Microsoft::WRL::ComPtr;
 
@@ -20,8 +20,7 @@ namespace rsim::graphics
         if (FAILED(hr))
         {
             rsim_error("Error while creating DXGI Factory!");
-            assert(false);
-        	return;
+            throw ComException(hr);
         }
 
         ComPtr<IDXGIFactory6> DXGIFactory6;
@@ -30,8 +29,7 @@ namespace rsim::graphics
         if (FAILED(hr))
         {
             rsim_error("RealSim requires at least Windows 10, version 1803 or later.");
-            assert(false);
-        	return;
+            throw ComException(hr);
         }
 
         bool dedicatedAdapterFound = false;
@@ -54,7 +52,7 @@ namespace rsim::graphics
                 dedicatedAdapterFound = true;
 
             	// Log information about the dedicated video adapter for testing purposes.
-                rsim_info("Using the adapter with the properties below:");
+                rsim_trace("Using the adapter with the properties below:");
 
             	constexpr size_t outputSize = _countof(desc.Description) + 1;
                 auto adapterDescriptionPtr = new char[outputSize];
@@ -63,10 +61,10 @@ namespace rsim::graphics
 
             	wcstombs_s(&charsConverted, adapterDescriptionPtr, outputSize, inputW, 128);
 
-            	rsim_info("Description: {0}", adapterDescriptionPtr);
+            	rsim_trace("Description : {0}", adapterDescriptionPtr);
                 delete[] adapterDescriptionPtr;
 
-            	rsim_info("Dedicated Video Memory: {0}MB", desc.DedicatedVideoMemory / 1024 / 1024);
+            	rsim_trace("Dedicated Video Memory : {0}MB", desc.DedicatedVideoMemory / 1024 / 1024);
 
             	break;
             }
@@ -75,7 +73,7 @@ namespace rsim::graphics
         if (!dedicatedAdapterFound)
         {
             rsim_error("Dedicated video adapter could not be found!");
-            return;
+            throw ComException(hr);
         }
 
         hr = ::D3D12CreateDevice(m_DXGIAdapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&m_Device));
@@ -83,7 +81,7 @@ namespace rsim::graphics
         if (FAILED(hr))
         {
             rsim_error("Error while creating the D3D12Device!");
-            return;
+            throw ComException(hr);
         }
 
         /*
