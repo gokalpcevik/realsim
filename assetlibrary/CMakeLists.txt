@@ -5,7 +5,8 @@ set(RSIM_ASSET_LIB realsim_asset_library PARENT_SCOPE)
 
 add_library(${RSIM_ASSET_LIB}
 	src/AssetLoader.cpp
-	src/MeshLoader.cpp)
+	src/MeshLoader.cpp
+	src/FileHelper.cpp)
 
 target_compile_definitions(${RSIM_ASSET_LIB} PUBLIC ${RSIM_ASSET_LIB})
 target_include_directories(${RSIM_ASSET_LIB} PUBLIC ${PROJECT_SOURCE_DIR}/assetlibrary/include)

@@ -1,27 +1,34 @@
 #include "assetbaker/MeshBaker.h"
+#include "assetlib/FileHelper.h"
 
 namespace RSim::AssetBaker
 {
-	// No point in taking std::filesystem::path because Assimp only accepts char const* paths anyway but
-	// doesn't really matter
-	MeshBaker::MeshBaker(std::filesystem::path FilePath, MeshImportOptions Options,
-	                     std::filesystem::path const& OutputDir)
-		: m_Path(std::move(FilePath))
+	namespace fs = std::filesystem;
+
+	MeshBaker::MeshBaker(std::filesystem::path const& FilePath, 
+		MeshImportOptions Options,
+		fs::path const& OutputDir)
 	{
 		Assimp::Importer importer;
-
+		ManualTimer timer;
 		// ReadFile() takes so long to execute its ridiculous sometimes
-		aiScene const* pScene = importer.ReadFile(m_Path.string(),
-		                                          aiProcess_ConvertToLeftHanded | aiProcess_Triangulate);
-		auto Stem = m_Path.stem();
+		aiScene const* pScene = importer.ReadFile(FilePath.string(), aiProcess_ConvertToLeftHanded | aiProcess_Triangulate);
+		if(pScene == nullptr)
+		{
+			baker_error("Can not read or recognize mesh file '{0}'.",FilePath.string());
+			return;
+		}
+
+		auto Stem = FilePath.stem();
+		std::string FileNameWithExtension = Stem.string() + ".rsim";
+		fs::path FinalOutputPath = OutputDir / FileNameWithExtension;
 
 		// This part can probably be multi-threaded.
 		for (size_t i = 0; i < pScene->mNumMeshes; ++i)
 		{
 			// These string and path operations are probably very slow, so:
 			// TODO: Optimize this.
-			std::string OutFileName = fmt::format("{0}{1}.rsim", Stem.string(), i);
-			std::filesystem::path OutFilePath(OutputDir.string() + OutFileName);
+			timer.Start("Mesh Conversion");
 
 			aiMesh* pMesh = pScene->mMeshes[i];
 			std::vector<uint32_t> Indices;
@@ -58,9 +65,18 @@ namespace RSim::AssetBaker
 
 			AssetLib::MeshInfo Info = GetMeshInfo(Vertices, Indices, FilePath.string());
 			AssetLib::Asset asset = AssetLib::PackMesh(Info, reinterpret_cast<char*>(Vertices.data()), reinterpret_cast<char*>(Indices.data()));
-			if(!AssetLib::SaveBinaryFile(OutFilePath, asset))
+			if(AssetLib::SaveBinaryFile(FinalOutputPath, asset))
 			{
-				baker_error("Error while baking mesh file '{0}'.", OutFilePath.string());
+				int64_t OriginalSize = AssetLib::GetFileSize(FilePath);
+				int64_t CompressedSize = AssetLib::GetFileSize(FinalOutputPath);
+				baker_info("The asset file was compressed by {0:.2f}%.",100.0f - (float)CompressedSize/(float)OriginalSize*100.0f);
+				baker_info("{0} -> {1}",FilePath.string(), FinalOutputPath.string());
+				timer.Stop();
+			}
+			else
+			{
+				baker_error("Error while saving compressed mesh file '{0}'.", FinalOutputPath.string());
+				timer.Stop();
 			}
 		}
 	}

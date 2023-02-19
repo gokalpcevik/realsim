@@ -9,7 +9,7 @@ set(RSIM_ASSET_LIB PARENT_SCOPE)
 
 add_executable(${RSIM_ASSET_BAKER} 
     src/Main.cpp
-    src/ScopedTimer.cpp
+    src/Timer.cpp
     src/MeshBaker.cpp
     src/Logger.cpp
     src/Application.cpp)

@@ -3,6 +3,10 @@
 
 namespace RSim::AssetBaker
 {
+    using RecursiveDirectoryIt = std::filesystem::recursive_directory_iterator;
+    using DirectoryIt = std::filesystem::directory_iterator;
+    namespace fs = std::filesystem;
+
 	Application::Application(CommandLineArguments args) : m_Args(args)
 	{
 
@@ -16,32 +20,32 @@ namespace RSim::AssetBaker
         auto const config  = GetConfigOptions();
 		auto const hidden  = GetHiddenOptions();
 
-        po::options_description cmdLineOptions;
-        cmdLineOptions.add(generic).add(config).add(hidden);
+        po::options_description CommandLineOptions;
+        CommandLineOptions.add(generic).add(config).add(hidden);
 
-        po::options_description cfgFileOptions;
-        cfgFileOptions.add(config).add(hidden);
+        po::options_description CfgFileOptions;
+        CfgFileOptions.add(config).add(hidden);
 
-        po::options_description visibleOptions("Allowed Options");
-        visibleOptions.add(generic).add(config);
+        po::options_description VisibleOptions("Allowed Options");
+        VisibleOptions.add(generic).add(config);
 
-        po::positional_options_description positionalOptions;
-        positionalOptions.add("input-file", -1);
+        po::positional_options_description PositionalOptions;
+        PositionalOptions.add("input-file", -1);
 
         try
         {
             po::variables_map vm;
-            po::store(po::command_line_parser(m_Args.argc, m_Args.argv).options(cmdLineOptions).positional(positionalOptions).run(), vm);
+            po::store(po::command_line_parser(m_Args.argc, m_Args.argv).options(CommandLineOptions).positional(PositionalOptions).run(), vm);
             po::notify(vm);
-
-            if(vm.count("create-config"))
-            {
-                return CreateConfigFile();
-            }
 
             if (vm.count("help"))
             {
                 return PrintHelp();
+            }
+
+            if (vm.count("create-config"))
+            {
+                return CreateConfigFile();
             }
 
             if (vm.count("version"))
@@ -49,27 +53,67 @@ namespace RSim::AssetBaker
                 return PrintVersion();
             }
 
-			if(!CheckConfigFile(vm,cfgFileOptions)) return BAKER_EXIT_FAILURE;
+			if(!CheckConfigFile(vm,CfgFileOptions)) return BAKER_EXIT_FAILURE;
 
-            if (vm.count("input-file"))
+            auto&& OutputDirectory = vm["output-path"].as<std::string>();
+
+            if (!fs::exists(OutputDirectory))
             {
-                auto&& outputDirectory = vm["output-directory"].as<std::string>();
-                auto&& inputFiles = vm["input-file"].as<std::vector<std::string>>();
+                baker_error("The specified output path '{0}' does not exist.", OutputDirectory);
+                return BAKER_EXIT_FAILURE;
+            }
 
-                // TODO:This part can be probably be multi-threaded
-            	for (auto  const& file : inputFiles)
+            if (fs::status(OutputDirectory).type() != fs::file_type::directory)
+            {
+                baker_error("The specified output path '{0} is not a directory.'", OutputDirectory);
+                return BAKER_EXIT_FAILURE;
+            }
+
+            bool Recursive = vm["recursive"].as<bool>();
+
+            if(vm.count("include-path"))
+            {
+                auto&& IncludePaths = vm["include-path"].as<std::vector<std::string>>();
+
+                if (Recursive)
                 {
-                    if (std::filesystem::exists(file))
+                    for (std::string const& IncludePath : IncludePaths)
                     {
-                        MeshImportOptions opt = GetMeshImportOptions(vm);
-                        MeshBaker meshBaker(file, opt);
-                    }
-                    else
-                    {
-                        baker_error("The specified file '{0}' does not exist.", file);
-                        continue;
+                        for (auto const& It : RecursiveDirectoryIt(IncludePath))
+                        {
+                            if(It.is_regular_file())
+                            {
+                                auto relative = fs::relative(It.path(), IncludePath);
+                                auto out = OutputDirectory / relative;
+                                fs::create_directories(out.parent_path());
+                            	MeshImportOptions opt = GetMeshImportOptions(vm);
+                                MeshBaker meshBaker(It, opt,out.parent_path());
+                            }
+                        }
                     }
                 }
+                else
+                {
+                    for (std::string const& IncludePath : IncludePaths)
+                    {
+                        for (auto const& It : DirectoryIt(IncludePath))
+                        {
+                            if(It.is_regular_file())
+                            {
+                                auto relative = fs::relative(It.path(), IncludePath);
+                                auto out = OutputDirectory / relative;
+                                fs::create_directories(out.parent_path());
+                                MeshImportOptions opt = GetMeshImportOptions(vm);
+                                MeshBaker meshBaker(It, opt,out.parent_path());
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                baker_error("No input paths has been specified.");
+                return BAKER_EXIT_FAILURE;
             }
         }
         catch(std::exception const& e)
@@ -88,7 +132,7 @@ namespace RSim::AssetBaker
             ("version,v", "print the current asset baker version")
             ("help", "list of available options")
 			("config,c", po::value<std::string>(&m_ConfigFile)->default_value(DefaultConfigFile.data(), DefaultConfigFile.data()), "configuration file")
-            ("recursive", po::value<bool>()->default_value(false,"false"), "recurse through directories")
+            ("recursive,r", po::value<bool>()->default_value(false,"false"), "recurse through directories")
             ("merge-meshes,m", po::value<bool>(&m_MeshImpOpt.MergeIntoSingleFile)->default_value(false,"false"), "merge scene meshes into a single mesh asset")
 			("create-config", po::value<std::string>(&m_ConfigFile), "create an empty config file");
         return generic;
@@ -99,7 +143,7 @@ namespace RSim::AssetBaker
         po::options_description config("Configuration");
         config.add_options()
             ("include-path,I", po::value< std::vector<std::string> >()->composing(), "include path")
-			("output-directory,o", po::value< std::string >()->composing()->default_value(DefaultOutputDir.data()), "output directory");
+			("output-path,o", po::value< std::string >()->composing()->default_value(DefaultOutputDir.data()), "output path");
         return config;
 	}
 
