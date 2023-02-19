@@ -20,15 +20,15 @@ namespace RSim::AssetBaker
 		}
 
 		auto Stem = FilePath.stem();
-		std::string FileNameWithExtension = Stem.string() + ".rsim";
-		fs::path FinalOutputPath = OutputDir / FileNameWithExtension;
+		
 
 		// This part can probably be multi-threaded.
 		for (size_t i = 0; i < pScene->mNumMeshes; ++i)
 		{
-			// These string and path operations are probably very slow, so:
-			// TODO: Optimize this.
-			timer.Start("Mesh Conversion");
+			timer.Start(fmt::format("'{0}' Mesh File Conversion",Stem.string()));
+
+			std::string FileNameWithExtension = Stem.string() + std::to_string(i) + ".rsim";
+			fs::path FinalOutputPath = OutputDir / FileNameWithExtension;
 
 			aiMesh* pMesh = pScene->mMeshes[i];
 			std::vector<uint32_t> Indices;
@@ -62,14 +62,17 @@ namespace RSim::AssetBaker
 				SetVertexFromAssimp(Vertex, Position, Normal, UV);
 				Vertices[VertexIndex] = Vertex;
 			}
-
 			AssetLib::MeshInfo Info = GetMeshInfo(Vertices, Indices, FilePath.string());
 			AssetLib::Asset asset = AssetLib::PackMesh(Info, reinterpret_cast<char*>(Vertices.data()), reinterpret_cast<char*>(Indices.data()));
 			if(AssetLib::SaveBinaryFile(FinalOutputPath, asset))
 			{
-				int64_t OriginalSize = AssetLib::GetFileSize(FilePath);
-				int64_t CompressedSize = AssetLib::GetFileSize(FinalOutputPath);
-				baker_info("The asset file was compressed by {0:.2f}%.",100.0f - (float)CompressedSize/(float)OriginalSize*100.0f);
+				// Although the outputted .rsim file might be larger than the original mesh/scene file, it will still be incredibly faster
+				// to import to the engine because we skip the parsing part.
+				int64_t OriginalSize = Info.VertexBufferSizeInBytes + Info.IndexBufferSizeInBytes;
+				int64_t CompressedSize = asset.BinaryBlob.size();
+				baker_trace("Original Size(Body): {} KB", OriginalSize / 1024);
+				baker_trace("Compressed Size(Blob): {} KB", CompressedSize / 1024);
+				baker_info("The mesh data was compressed by {0:.2f}%.", 100.0f - (float)CompressedSize / (float)OriginalSize * 100.0f);
 				baker_info("{0} -> {1}",FilePath.string(), FinalOutputPath.string());
 				timer.Stop();
 			}
