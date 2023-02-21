@@ -25,6 +25,7 @@
 #include "realsim/ecs/Scene.h"
 #include "realsim/ecs/CommonComponents.h"
 #include "realsim/ecs/PerspectiveCameraComponent.h"
+#include "realsim/ecs/Link.h"
 
 namespace RSim::Graphics
 {

@@ -83,25 +83,35 @@ namespace RSim::Graphics
 		}
 		gfxCmdList->RSSetViewports(1, &m_Viewport);
 		gfxCmdList->RSSetScissorRects(1, &m_ScissorRect);
-		auto const view = registry.view<ECS::BoxComponent>();
+		auto const view = registry.view<ECS::BoxComponent,ECS::TransformComponent,ECS::Link>();
 
 		for(auto const entity : view)
 		{
-			auto&&BC = view.get<ECS::BoxComponent>(entity);
+			auto&&[BC,TC,Link] = view.get<ECS::BoxComponent, ECS::TransformComponent,ECS::Link>(entity);
 
 			float fWidth = (float)m_pOutputWindow->GetWidth();
 			float fHeight = (float)m_pOutputWindow->GetHeight();
 
 			float aspectRatio = fWidth / fHeight;
-			ECS::TransformComponent TC{};
-			//TC.Translation.z = 1.0f;
-			//TC.Translation.x = (BC.ScreenPosition.x / fWidth - 0.5f) * 2.0f;
-			//TC.Translation.y = (0.5f - BC.ScreenPosition.y / fHeight) * 2.0f;
-			TC.Scale = { 1.0f,1.0f,1.0f };
 
-			DirectX::XMStoreFloat4(&TC.Rotation, DirectX::XMQuaternionRotationRollPitchYaw(0.0f, DirectX::XMConvertToRadians(180.0f), 0.0f));
-			DirectX::XMMATRIX mvpMatrix = DirectX::XMMatrixMultiply(TC.GetTransform(), cameraComponent->GetViewMatrix());
-			mvpMatrix = DirectX::XMMatrixMultiply(mvpMatrix, cameraComponent->GetProjectionMatrix(aspectRatio));
+			entt::entity parent = Link.GetParent();
+			ECS::TransformComponent* parentTransform;
+			DirectX::XMMATRIX mvpMatrix;
+
+			if(parent != entt::null)
+			{
+				parentTransform = &Scene.GetComponent<ECS::TransformComponent>(parent);
+				DirectX::XMStoreFloat4(&parentTransform->Rotation, DirectX::XMQuaternionRotationRollPitchYaw(0.0f, DirectX::XMConvertToRadians(180.0f), 0.0f));
+				mvpMatrix = DirectX::XMMatrixMultiply(TC.GetTransform(), parentTransform->GetTransform());
+				mvpMatrix = DirectX::XMMatrixMultiply(mvpMatrix, cameraComponent->GetViewMatrix());
+				mvpMatrix = DirectX::XMMatrixMultiply(mvpMatrix, cameraComponent->GetProjectionMatrix(aspectRatio));
+			}
+			else
+			{
+				DirectX::XMStoreFloat4(&TC.Rotation, DirectX::XMQuaternionRotationRollPitchYaw(0.0f, DirectX::XMConvertToRadians(180.0f), 0.0f));
+				mvpMatrix = DirectX::XMMatrixMultiply(TC.GetTransform(), cameraComponent->GetViewMatrix());
+				mvpMatrix = DirectX::XMMatrixMultiply(mvpMatrix, cameraComponent->GetProjectionMatrix(aspectRatio));
+			}
 
 			gfxCmdList->SetPipelineState(m_PipelineState.Get());
 			gfxCmdList->SetGraphicsRootSignature(m_Sig->GetRootSignature().Get());
@@ -246,7 +256,7 @@ namespace RSim::Graphics
 
 		VertexLayout layout(VS);
 
-		RootSignatureFileDeserializer file("RootSignatures/basic.yml");
+		RootSignatureFileDeserializer file("Shaders/basic_rootsignature.yml");
 
 		HRESULT hr;
 		SerializedRootSignature blob = SerializeRootSignature(file, Device().GetDevice2Raw(), hr);

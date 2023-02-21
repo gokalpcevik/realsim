@@ -3,7 +3,7 @@ struct Color
     float4 Color;
 };
 
-ConstantBuffer<float4> ColorCB : register(b1);
+ConstantBuffer<Color> ColorCB : register(b1);
 
 struct PixelShaderInput
 {
@@ -18,5 +18,5 @@ struct PixelShaderOutput
 
 void main(in PixelShaderInput PSIn,out PixelShaderOutput PSOut)
 {
-    PSOut.Color = normalize(PSIn.Position);
+    PSOut.Color = ColorCB.Color;
 }
