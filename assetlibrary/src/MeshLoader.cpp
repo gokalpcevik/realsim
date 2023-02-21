@@ -55,7 +55,7 @@ namespace RSim::AssetLib
 		size_t compressStaging = LZ4_compressBound(static_cast<int>(fullsize));
 
 		file.BinaryBlob.resize(compressStaging);
-
+		
 		int compressedSize = LZ4_compress_default(MergedBuffer.data(), 
 			file.BinaryBlob.data(), 
 			static_cast<int>(MergedBuffer.size()), 
@@ -81,5 +81,24 @@ namespace RSim::AssetLib
 
 		//copy index buffer
 		memcpy(IndexBuffer, decompressedBuffer.data() + Info.VertexBufferSizeInBytes, Info.IndexBufferSizeInBytes);
+	}
+
+	void UnpackMesh(MeshInfo const& Info, Asset const& Asset, UnpackedMesh& OutUnpacked)
+	{
+		OutUnpacked.VertexBufferBlob.resize(Info.VertexBufferSizeInBytes);
+		OutUnpacked.IndexBufferBlob.resize(Info.IndexBufferSizeInBytes);
+		AssetLib::UnpackMesh(Info, Asset.BinaryBlob.data(), Asset.BinaryBlob.size(), OutUnpacked.VertexBufferBlob.data(), OutUnpacked.IndexBufferBlob.data());
+	}
+
+	std::pair<Vertex_F32PNCV*, size_t> ExtractVerticesFromUnpackedMesh(UnpackedMesh const& UnpackedMesh)
+	{
+		return ExtractVerticesFromUnpackedMesh(UnpackedMesh.VertexBufferBlob);
+	}
+
+	std::pair<Vertex_F32PNCV*, size_t> ExtractVerticesFromUnpackedMesh(std::vector<char> const& UnpackedVertexBuffer)
+	{
+		assert(UnpackedVertexBuffer.size() % MeshInfo::VertexStride == 0);
+		Vertex_F32PNCV* pVertices = const_cast<Vertex_F32PNCV*>(reinterpret_cast<Vertex_F32PNCV const*>(UnpackedVertexBuffer.data()));
+		return { pVertices, UnpackedVertexBuffer.size() / MeshInfo::VertexStride }; 
 	}
 }

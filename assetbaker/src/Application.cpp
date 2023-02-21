@@ -74,6 +74,7 @@ namespace RSim::AssetBaker
             if(vm.count("include-path"))
             {
                 auto&& IncludePaths = vm["include-path"].as<std::vector<std::string>>();
+                Assimp::Importer importer;
 
                 if (Recursive)
                 {
@@ -83,11 +84,18 @@ namespace RSim::AssetBaker
                         {
                             if(It.is_regular_file())
                             {
-                                auto relative = fs::relative(It.path(), IncludePath);
-                                auto out = OutputDirectory / relative;
-                                fs::create_directories(out.parent_path());
-                            	MeshImportOptions opt = GetMeshImportOptions(vm);
-                                MeshBaker meshBaker(It, opt,out.parent_path());
+                                auto&& FilePath = It.path();
+                                auto&& FileExtensionStr = FilePath.extension().string();
+                                auto Relative = fs::relative(FilePath, IncludePath);
+                                auto Out = OutputDirectory / Relative;
+                                fs::create_directories(Out.parent_path());
+
+                                // Check if it is a mesh/scene file with Assimp
+                                if(importer.IsExtensionSupported(FileExtensionStr))
+                                {
+                                    MeshImportOptions opt = GetMeshImportOptions(vm);
+                                    MeshBaker meshBaker(FilePath, opt, Out.parent_path());
+                                }
                             }
                         }
                     }
@@ -100,11 +108,18 @@ namespace RSim::AssetBaker
                         {
                             if(It.is_regular_file())
                             {
-                                auto relative = fs::relative(It.path(), IncludePath);
-                                auto out = OutputDirectory / relative;
-                                fs::create_directories(out.parent_path());
-                                MeshImportOptions opt = GetMeshImportOptions(vm);
-                                MeshBaker meshBaker(It, opt,out.parent_path());
+                                auto&& FilePath = It.path();
+                                auto&& FileExtensionStr = FilePath.extension().string();
+                                auto Relative  = fs::relative(FilePath, IncludePath);
+                                auto Out = OutputDirectory / Relative ;
+                                fs::create_directories(Out.parent_path());
+
+                                // Check if it is a mesh/scene file with Assimp
+								if(importer.IsExtensionSupported(FileExtensionStr))
+								{
+                                    MeshImportOptions opt = GetMeshImportOptions(vm);
+                                    MeshBaker meshBaker(FilePath, opt, Out.parent_path());
+								}
                             }
                         }
                     }

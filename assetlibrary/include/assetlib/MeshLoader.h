@@ -58,4 +58,15 @@ namespace RSim::AssetLib
 	 */
 	Asset PackMesh(MeshInfo const& Info, char const* pVertexData, char const* pIndexData);
 	void UnpackMesh(MeshInfo const& Info, const char* SourceBuffer, size_t SourceSize, char* VertexBuffer, char* IndexBuffer);
+
+	struct UnpackedMesh
+	{
+		std::vector<char> VertexBufferBlob;
+		std::vector<char> IndexBufferBlob;
+	};
+
+	void UnpackMesh(MeshInfo const& Info, Asset const& Asset, UnpackedMesh& OutUnpacked);
+
+	std::pair<Vertex_F32PNCV*, size_t> ExtractVerticesFromUnpackedMesh(UnpackedMesh const& UnpackedMesh);
+	std::pair<Vertex_F32PNCV*, size_t> ExtractVerticesFromUnpackedMesh(std::vector<char> const& UnpackedVertexBuffer);
 }

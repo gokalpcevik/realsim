@@ -4,6 +4,7 @@
 #include <vector>
 #include <iostream>
 #include <boost/program_options.hpp>
+#include <assimp/Importer.hpp>
 
 #include "Logger.h"
 #include "MeshBaker.h"

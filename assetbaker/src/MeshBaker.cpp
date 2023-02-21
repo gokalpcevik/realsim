@@ -50,7 +50,6 @@ namespace RSim::AssetBaker
 			{
 				aiVector3D Position = pMesh->mVertices[VertexIndex];
 				aiVector3D Normal = pMesh->mNormals[VertexIndex];
-
 				aiVector3D const* UVCoordinates = pMesh->mTextureCoords[0];
 				aiVector3D UV{0.0f, 0.0f, 0.0f};
 				if (UVCoordinates)
@@ -63,8 +62,8 @@ namespace RSim::AssetBaker
 				Vertices[VertexIndex] = Vertex;
 			}
 			AssetLib::MeshInfo Info = GetMeshInfo(Vertices, Indices, FilePath.string());
-			AssetLib::Asset asset = AssetLib::PackMesh(Info, reinterpret_cast<char*>(Vertices.data()), reinterpret_cast<char*>(Indices.data()));
-			if(AssetLib::SaveBinaryFile(FinalOutputPath, asset))
+			AssetLib::Asset asset = PackMesh(Info, reinterpret_cast<char*>(Vertices.data()), reinterpret_cast<char*>(Indices.data()));
+			if(SaveBinaryFile(FinalOutputPath, asset))
 			{
 				// Although the outputted .rsim file might be larger than the original mesh/scene file, it will still be incredibly faster
 				// to import to the engine because we skip the parsing part.
@@ -72,7 +71,7 @@ namespace RSim::AssetBaker
 				int64_t CompressedSize = asset.BinaryBlob.size();
 				baker_trace("Original Size(Body): {} KB", OriginalSize / 1024);
 				baker_trace("Compressed Size(Blob): {} KB", CompressedSize / 1024);
-				baker_info("The mesh data was compressed by {0:.2f}%.", 100.0f - (float)CompressedSize / (float)OriginalSize * 100.0f);
+				baker_info("The mesh data was compressed by {0:.3f}%.", 100.0f - (float)CompressedSize / (float)OriginalSize * 100.0f);
 				baker_info("{0} -> {1}",FilePath.string(), FinalOutputPath.string());
 				timer.Stop();
 			}
