@@ -125,7 +125,7 @@ target_include_directories(${RSIM_LIB} PUBLIC ${D3D12X_INCLUDE_DIRS})
 # If you add more executables, copy these lines accordingly.
 add_executable(realsim_interactive  app/Main.cpp)   # Name of exec. and location of file.
 target_link_libraries(realsim_interactive PRIVATE  ${RSIM_LIB})  # Link the executable to library (if it uses it).
-target_set_warnings(realsim_interactive ENABLE ALL AS_ERROR ALL DISABLE Annoying) # Set warnings (if needed).
+target_set_warnings(realsim_interactive DISABLE Annoying) # Set warnings (if needed).
 target_enable_lto(realsim_interactive optimized)  # enable link-time-optimization if available for non-debug configurations
 
 # Set the properties you require, e.g. what C++ standard to use. Here applied to library and main (change as needed).

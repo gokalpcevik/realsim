@@ -49,7 +49,7 @@ namespace RSim::Graphics
 
 		[[nodiscard]] D3D12_INDEX_BUFFER_VIEW GetView() const { return m_IndexBufferView; }
 	private:
-		D3D12_INDEX_BUFFER_VIEW m_IndexBufferView;
+		D3D12_INDEX_BUFFER_VIEW m_IndexBufferView{};
 	};
 
 	class ConstantBuffer final : public GraphicsResource

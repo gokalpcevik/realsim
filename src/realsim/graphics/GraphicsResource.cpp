@@ -59,8 +59,8 @@ namespace RSim::Graphics
 	}
 
 	ConstantBuffer::ConstantBuffer(ID3D12Resource* pResource, D3D12_RESOURCE_STATES UsageState, uint32_t BufferSize,
-		D3D12_CPU_DESCRIPTOR_HANDLE CBVHandle)
-			: GraphicsResource(pResource,UsageState), m_CPUHandle(CBVHandle), m_BufferSize(BufferSize)
+	                               D3D12_CPU_DESCRIPTOR_HANDLE CBVHandle)
+		: GraphicsResource(pResource, UsageState), m_CPUHandle(CBVHandle), m_BufferSize(BufferSize)
 	{
 		m_GPUVirtualAddress = pResource->GetGPUVirtualAddress();
 		pResource->Map(0, &CD3DX12_RANGE(0, 0), &m_MappedBufferPtr);
