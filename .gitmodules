@@ -1,0 +1,3 @@
+[submodule "vendor/DiligentEngine"]
+	path = vendor/DiligentEngine
+	url = https://github.com/gokalpcevik/DiligentEngine.git
