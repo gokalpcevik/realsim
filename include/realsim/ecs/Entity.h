@@ -1,12 +1,12 @@
 #pragma once
 
 #include <tuple>
-
 #include <entt/entt.hpp>
 #define RSIM_ENABLE_ASSERTS
 
-#include "realsim/core/Assert.h"
+#include "BasicMath.hpp"
 
+#include "realsim/core/Assert.h"
 #include "realsim/ecs/Scene.h"
 
 namespace RSim::ECS
@@ -62,8 +62,15 @@ namespace RSim::ECS
         void RemoveChildAt(std::size_t Index);
         void TryRemoveChildAt(std::size_t Index);
 
-        [[nodiscard]] TransformComponent& GetLocalTransform();
-        [[nodiscard]] TransformComponent const& GetLocalTransform() const;
+        /**
+         * \brief Transform of the entity, with respect to the world's coordinate frame.
+         */
+        [[nodiscard]] Dl::float4x4 GetWorldTransform() const;
+        /**
+         * \brief Transform of the entity, with respect to the coordinate frame of it's parent, which might be another entity's frame or
+         * the world frame.
+         */
+        [[nodiscard]] Dl::float4x4 GetLocalTransform() const;
         [[nodiscard]] NameComponent const& GetName() const;
         [[nodiscard]] Link const& GetLink() const;
 

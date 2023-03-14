@@ -7,6 +7,8 @@
 
 namespace RSim::AssetLib
 {
+	static std::filesystem::path const DefaultMeshAssetPath = "mesh_assets/";
+
 	struct Vertex_F32PNCV
 	{
 		float Position[3];
@@ -34,6 +36,10 @@ namespace RSim::AssetLib
 		 * \brief Size of an index in bytes. It is usually equal sizeof(uint32_t) = 4 bytes. 
 		 */
 		char IndexSize{};
+		/**
+		 * \brief Number of indices, that is IndexBufferSizeInBytes / IndexSize;
+		 */
+		size_t IndexCount = 0;
 		/**
 		 * \brief Path to the original file.
 		 */
@@ -70,3 +76,5 @@ namespace RSim::AssetLib
 	std::pair<Vertex_F32PNCV*, size_t> ExtractVerticesFromUnpackedMesh(UnpackedMesh const& UnpackedMesh);
 	std::pair<Vertex_F32PNCV*, size_t> ExtractVerticesFromUnpackedMesh(std::vector<char> const& UnpackedVertexBuffer);
 }
+
+#define RSMESH_PATH(Path) (::RSim::AssetLib::DefaultMeshAssetPath / (Path))

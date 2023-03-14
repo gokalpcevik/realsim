@@ -1,8 +1,10 @@
 ﻿#include "realsim/core/Application.h"
+#include <EngineFactory.h>
+#include <EngineFactoryD3D12.h>
 
 namespace RSim::Core
 {
-	auto Application::UpdateStatistics::GetFramesPerSecond() const -> float
+	auto Application::UpdateStatistics::GetFPS() const -> float
 	{
 		return 1.0f / ((float)m_FrameTime / (float)SDL_GetPerformanceFrequency());
 	}
@@ -18,22 +20,25 @@ namespace RSim::Core
 	}
 
 	Application::Application(CommandLineArgs args)
-    : m_StartArgs(args)
+		: m_StartArgs(args), m_LayerStack(*this)
 	{
-
+		m_UILayer = new Editor::UILayer();
+		m_LayerStack.AddLayer(m_UILayer);
 	}
 
 	ReturnCode Application::Run()
 	{
 		Logger::Init();
-		Application::LogLibraryVersion();
-		Application::RSIM_SetConsoleTitle("RealSim Interactive - Console");
+		LogLibraryVersion();
+		SetRealSimConsoleTitle(L"RealSim Interactive - Console");
 
 		if (ReturnCode init = OnInit(); init != REALSIM_EXIT_SUCCESS)
 		{
 			rsim_error("Initialization has failed!");
 			return init;
 		}
+		m_LayerStack.OnInit();
+
 		SDL_Event e;
 
 		m_Scene = std::make_unique<ECS::Scene>();
@@ -48,32 +53,57 @@ namespace RSim::Core
 
 		m_Box = m_Scene->CreateEntity();
 		m_Box2 = m_Scene->CreateEntity();
-		auto& BC = m_Box.AddComponent<ECS::BoxComponent>();
-		BC.Color = { 0.6f,0.2f,0.2f,1.0f };
-		m_Box.GetLocalTransform().Translation.x -= 1.5f;
+		auto& Mesh = m_Box.AddComponent<ECS::MeshComponent>();
+		auto& Mesh2 = m_Box2.AddComponent<ECS::MeshComponent>();
 
-		auto& BC2 = m_Box2.AddComponent<ECS::BoxComponent>();
-		BC2.Color = { 0.6f,0.2f,0.2f,1.0f };
-		m_Box2.GetLocalTransform().Translation.x += 1.5f;
+		SusanneAsset = AssetLib::LoadBinaryFile("mesh_assets/monkey0.rsim");
+		SusanneMeshInfo = ReadMeshInfo(SusanneAsset);
+		Mesh.Drawable = m_Renderer->CreateDrawable(&SusanneMeshInfo, &SusanneAsset);
+		Mesh.pAsset = &SusanneAsset;
+		Mesh.pMeshInfo = &SusanneMeshInfo;
+
+		Mesh2.Drawable = Mesh.Drawable;
+		Mesh2.pAsset = &SusanneAsset;
+		Mesh2.pMeshInfo = &SusanneMeshInfo;
+
+		m_Box2.GetComponent<ECS::TransformComponent>().Translation.x += 3.0f;
+
+		m_CameraController.SetEnabled(true);
 
 		while (m_Running)
 		{
-			this->CalculateUpdateStatistics();
 
-			m_MainWindow->SetTitle(fmt::format("RealSim Interactive - FPS:{0:.2f}",m_UpdateStats.GetFramesPerSecond()));
-
-			while(SDL_PollEvent(&e) != 0)
+			while (SDL_PollEvent(&e) != 0)
 			{
-				this->Handle_SDL_Events(e);
+				Handle_SDL_Events(e);
+				ImGui_ImplSDL2_ProcessEvent(&e);
 			}
 
-			this->OnUpdate();
+			// Update
+			{
+				this->OnUpdate();
+				m_LayerStack.OnUpdate(m_Scene.get());
+			}
 
-			FLOAT const color[] = { 0.2f / 2.0f,0.2f / 2.0f,0.2f / 2.0f,1.0f};
+			// Clear the offscreen back buffer and depth buffer
+			float color[] = { 0.15f, 0.15f, 0.15f, 1.0f };
 			m_Renderer->Clear(color);
-			m_Renderer->Render(*m_Scene);
-			m_Renderer->Present();
+
+			// Render the scene to the offscreen buffer
+			m_Renderer->RenderScene(m_Scene.get());
+
+			// UI
+			{
+				m_Renderer->BeginImGuiFrame();
+				m_LayerStack.OnRenderUI(m_Scene.get(), m_Renderer.get());
+				m_Renderer->FinishImGuiFrame();
+			}
+
+			// Present
+			m_Renderer->Present(1u);
+			CalculateUpdateStatistics();
 		}
+		m_LayerStack.OnShutdown();
 		return REALSIM_EXIT_SUCCESS;
 	}
 
@@ -94,41 +124,30 @@ namespace RSim::Core
 
 	ReturnCode Application::OnInit()
 	{
-		m_Renderer = std::make_unique<GFX::Renderer>(m_MainWindow.get());
+		m_Renderer = std::make_unique<Graphics::Renderer>(m_MainWindow.get());
+		m_MainWindow->SetTitle(fmt::format("RealSim Interactive - {}", m_Renderer->GetEngineName()));
 		return REALSIM_EXIT_SUCCESS;
 	}
 
 	void Application::OnUpdate()
 	{
-		if(Input::IsKeyPressed(SDL_SCANCODE_ESCAPE))
+		if (Input::IsKeyPressed(SDL_SCANCODE_ESCAPE))
 		{
 			Shutdown();
 		}
-		if (Input::IsKeyPressed(SDL_SCANCODE_UP))
-		{
-			ZPosition += 0.01f * m_UpdateStats.GetFrameTime();
-			pCamera->SetViewMatrix(DirectX::XMMatrixLookAtLH(DirectX::XMVectorSet(0.0f, 0.0f, ZPosition, 1.0f),
-				DirectX::XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f),
-				DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f)));
-		}
-		else if (Input::IsKeyPressed(SDL_SCANCODE_DOWN))
-		{
-			ZPosition -= 0.01f * m_UpdateStats.GetFrameTime();
-			pCamera->SetViewMatrix(DirectX::XMMatrixLookAtLH(DirectX::XMVectorSet(0.0f, 0.0f, ZPosition, 1.0f),
-				DirectX::XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f),
-				DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f)));
-		}
 
-		auto& BC = m_Box.GetComponent<ECS::BoxComponent>();
-		auto& BC2 = m_Box2.GetComponent<ECS::BoxComponent>();
-		
-		BC.Color.x = (float)Input::GetCursorPosition()[0] / (float)m_MainWindow->GetWidth();
-		BC.Color.y = (float)Input::GetCursorPosition()[1] / (float)m_MainWindow->GetHeight();
-		BC.Color.z = 1.0f - BC.Color.x;
+		{
+			// Skip the first few frames because delta time is extremely big and causes issues
+			if (m_UpdateStats.m_UpdateCounter < 5)
+				return;
 
-		BC2.Color.x = 1.0f - BC.Color.x;
-		BC2.Color.y = 1.0f - BC.Color.y;
-		BC2.Color.z = 1.0f - BC.Color.z;
+			auto& CC = m_Camera.GetComponent<ECS::PerspectiveCameraComponent>();
+			if (Input::IsKeyPressed(SDL_SCANCODE_LSHIFT) && Input::IsKeyPressed(SDL_SCANCODE_F1))
+				m_CameraController.SetEnabled(false);
+			if (Input::IsKeyPressed(SDL_SCANCODE_KP_ENTER))
+				m_CameraController.SetEnabled(true);
+			m_CameraController.Update(m_UpdateStats.GetFrameTimeSeconds(), &CC);
+		}
 	}
 
 	void Application::Handle_SDL_Events(SDL_Event const& e)
@@ -137,15 +156,16 @@ namespace RSim::Core
 		{
 			m_Running = false;
 		}
+
 		// Handle window events with e.window.event if the e.type == SDL_WINDOWEVENT
 		if (e.type == SDL_WINDOWEVENT)
 		{
 			if (e.window.windowID == SDL_GetWindowID(m_MainWindow->GetSDLWindow()))
 			{
-				m_MainWindow->HandleEvent(e,true);
-				if(e.window.event == SDL_WINDOWEVENT_RESIZED)
+				m_MainWindow->HandleEvent(e, true);
+				if (e.window.event == SDL_WINDOWEVENT_RESIZED)
 				{
-					uint32_t width  = (uint32_t)e.window.data1;
+					uint32_t width = (uint32_t)e.window.data1;
 					uint32_t height = (uint32_t)e.window.data2;
 					m_Renderer->Resize(width, height);
 				}
@@ -154,7 +174,7 @@ namespace RSim::Core
 			{
 				for (auto const& window : m_OtherWindows)
 				{
-					window->HandleEvent(e,false);
+					window->HandleEvent(e, false);
 				}
 			}
 		}
@@ -165,20 +185,19 @@ namespace RSim::Core
 		auto const counter = SDL_GetPerformanceCounter();
 		m_UpdateStats.m_FrameTime = counter - m_UpdateStats.m_LastTickCount;
 		m_UpdateStats.m_LastTickCount = counter;
+		++m_UpdateStats.m_UpdateCounter;
 	}
 
 	void Application::LogLibraryVersion()
 	{
-		rsim_info("Library Version {}.{}.{}", 
+		rsim_info("Library Version {}.{}.{}",
 			RSIM_PROJECT_VERSION_MAJOR,
-		    RSIM_PROJECT_VERSION_MINOR, 
+			RSIM_PROJECT_VERSION_MINOR,
 			RSIM_PROJECT_VERSION_PATCH);
 	}
 
-	void Application::RSIM_SetConsoleTitle(LPCTSTR Title)
+	void Application::SetRealSimConsoleTitle(LPCTSTR Title)
 	{
 		::SetConsoleTitle(Title);
 	}
 }
-
-

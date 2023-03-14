@@ -43,6 +43,6 @@ namespace RSim::AssetBaker
 		// TODO: Investigate.
 		static inline void SetIndicesFromFace(std::vector<uint32_t>& indices, aiFace const& pFace, size_t BaseFaceIndex);
 		static inline void SetVertexFromAssimp(AssetLib::Vertex_F32PNCV& Vertex, aiVector3D const& Position, aiVector3D const& Normal, aiVector3D const& UV);
-		static inline AssetLib::MeshInfo GetMeshInfo(std::vector<AssetLib::Vertex_F32PNCV> const& Vertices, std::vector<uint32_t> const& Indices, std::string const& OriginalFile);
+		static inline AssetLib::MeshInfo CreateMeshInfo(std::vector<AssetLib::Vertex_F32PNCV> const& Vertices, std::vector<uint32_t> const& Indices, std::string const& OriginalFile);
 	};
 }

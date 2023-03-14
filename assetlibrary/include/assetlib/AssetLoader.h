@@ -4,6 +4,7 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include "assetlib/FileHelper.h"
 
 namespace RSim::AssetLib
 {
@@ -12,6 +13,8 @@ namespace RSim::AssetLib
 		None = 0,
 		LZ4
 	};
+
+	using AssetHandle = uint64_t;
 
 	struct Asset
 	{
@@ -22,23 +25,14 @@ namespace RSim::AssetLib
 
 		Asset(Asset&& rhs) noexcept
 		{
-			// Probably faster than std::memcpy() ??
-			Type[0] = rhs.Type[0];
-			Type[1] = rhs.Type[1];
-			Type[2] = rhs.Type[2];
-			Type[3] = rhs.Type[3];
-			Version = rhs.Version;
+			std::memcpy(Type,rhs.Type,4);
 			Metadata = std::move(rhs.Metadata);
 			BinaryBlob = std::move(rhs.BinaryBlob);
 		}
 
 		Asset& operator=(Asset&& rhs) noexcept
 		{
-			// Probably faster than std::memcpy() ??
-			Type[0] = rhs.Type[0];
-			Type[1] = rhs.Type[1];
-			Type[2] = rhs.Type[2];
-			Type[3] = rhs.Type[3];
+			std::memcpy(Type, rhs.Type, 4);
 			Version = rhs.Version;
 			Metadata = std::move(rhs.Metadata);
 			BinaryBlob = std::move(rhs.BinaryBlob);
@@ -67,9 +61,17 @@ namespace RSim::AssetLib
 		 */
 		std::string Metadata {};
 		/**
-		 * \brief Raw data of the object, like the pixels of a texture or vertices of a mesh file.
+		 * \brief Raw data of the object, compressed , like the pixels of a texture or vertices of a mesh file.
 		 */
 		std::vector<char> BinaryBlob{};
+
+		/**
+		 * \brief Total size of the compressed asset(lying on the disk), including the binary blob, metadata and other fields.
+		 * - This does not get saved into the asset file, it is only set when loading a binary file.
+		 */
+		size_t TotalCompressedSizeInBytes;
+
+		uint64_t HashValue;
 
         static Asset const Null;
     };

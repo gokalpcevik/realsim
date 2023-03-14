@@ -29,7 +29,6 @@ namespace RSim::AssetLib
 
 		// JSON metadata stream
 		outfile.write(file.Metadata.data(), lenght);
-		// Texel data
 		outfile.write(file.BinaryBlob.data(), (uint32_t)file.BinaryBlob.size());
 
 		outfile.close();
@@ -63,6 +62,9 @@ namespace RSim::AssetLib
 			
 		asset.BinaryBlob.resize(blobLen);
 		infile.read(asset.BinaryBlob.data(), blobLen);
+
+		asset.TotalCompressedSizeInBytes = GetFileSize(Path);
+		asset.HashValue = hash_value(Path);
 
 		return asset;
 	}

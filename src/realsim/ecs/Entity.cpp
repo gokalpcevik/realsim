@@ -200,15 +200,25 @@ namespace RSim::ECS
         }
     }
 
-    TransformComponent& Entity::GetLocalTransform()
+	Dl::float4x4 Entity::GetWorldTransform() const
     {
-        return m_Scene->GetComponent<TransformComponent>(*this);
+        if (GetParent() == Null) return GetLocalTransform();
+
+        Entity parent = GetParent();
+        Dl::float4x4 Transform = GetLocalTransform();
+    	while(parent != Null)
+        {
+            Transform = Transform * parent.GetLocalTransform();
+            parent = parent.GetParent();
+        }
+        return Transform;
     }
 
-    TransformComponent const& Entity::GetLocalTransform() const
+    Dl::float4x4 Entity::GetLocalTransform() const
     {
-        return m_Scene->GetComponent<TransformComponent>(*this);
+        return m_Scene->GetComponent<TransformComponent>(*this).GetTransform();
     }
+
 
     NameComponent const& Entity::GetName() const
     {

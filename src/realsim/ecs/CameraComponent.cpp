@@ -1,1 +1,1 @@
-#include "realsim/ecs/PerspectiveCameraComponent.h"
+#include "realsim/ecs/CameraComponent.h"

@@ -6,35 +6,41 @@
 #include <string_view>
 #include <Eigen/Eigen>
 
+#include "BasicMath.hpp"
+#include "AdvancedMath.hpp"
+
 namespace RSim::ECS
 {
+    namespace Dl = Diligent;
+
     struct TransformComponent
     {
         TransformComponent() = default;
 
-        TransformComponent(DirectX::XMFLOAT3 translation, DirectX::XMFLOAT4 rotation, DirectX::XMFLOAT3 scale)
-            : Translation(std::move(translation)), Rotation(rotation),
-            Scale(std::move(scale))
+        TransformComponent(Dl::float3 translation, Dl::float3 rotation, Dl::float3 scale)
+            : Translation(translation), Rotation(rotation),
+            Scale(scale)
         {
         }
 
-        [[nodiscard]] DirectX::XMMATRIX GetTransform() const noexcept
+        [[nodiscard]] Dl::float4x4 GetTransform() const noexcept
         {
             return
-        		DirectX::XMMatrixScaling(Scale.x, Scale.y, Scale.z) * 
-                DirectX::XMMatrixRotationQuaternion(DirectX::XMLoadFloat4(&Rotation)) *
-                DirectX::XMMatrixTranslation(Translation.x, Translation.y, Translation.z);
+                Dl::float4x4::Scale(Scale) *
+                Dl::float4x4::RotationX(DirectX::XMConvertToRadians(Rotation.x)) *
+                Dl::float4x4::RotationY(DirectX::XMConvertToRadians(Rotation.y)) *
+                Dl::float4x4::RotationZ(DirectX::XMConvertToRadians(Rotation.z)) *
+                Dl::float4x4::Translation(Translation);
         }
 
-        DirectX::XMFLOAT3 Translation{0.0f, 0.0f, 0.0f};
-        DirectX::XMFLOAT4 Rotation{ 0.0f,0.0f,0.0f,1.0f };
-        DirectX::XMFLOAT3 Scale{1.0f,1.0f,1.0f};
+        Dl::float3 Translation{0.0f, 0.0f, 0.0f};
+        Dl::float3 Rotation;
+        Dl::float3 Scale{1.0f,1.0f,1.0f};
     };
 
     struct BoxComponent
     {
-        DirectX::XMFLOAT2 ScreenPosition{0.0f,0.0f};
-        DirectX::XMFLOAT4 Color{0.5f,0.5f,0.5f,1.0f};
+        Dl::float4 Color{0.5f,0.5f,0.5f,1.0f};
         float Rotation{ 0.0f };
     };
 

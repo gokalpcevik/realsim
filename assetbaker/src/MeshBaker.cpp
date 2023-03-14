@@ -61,7 +61,7 @@ namespace RSim::AssetBaker
 				SetVertexFromAssimp(Vertex, Position, Normal, UV);
 				Vertices[VertexIndex] = Vertex;
 			}
-			AssetLib::MeshInfo Info = GetMeshInfo(Vertices, Indices, FilePath.string());
+			AssetLib::MeshInfo Info = CreateMeshInfo(Vertices, Indices, FilePath.string());
 			AssetLib::Asset asset = PackMesh(Info, reinterpret_cast<char*>(Vertices.data()), reinterpret_cast<char*>(Indices.data()));
 			if(SaveBinaryFile(FinalOutputPath, asset))
 			{
@@ -96,8 +96,6 @@ namespace RSim::AssetBaker
 		Vertex.UV[0] = UV.x;
 		Vertex.UV[1] = UV.y;
 
-		// Copying these is a good idea?
-		// TODO: Investigate.
 		Vertex.Position[0] = Position[0];
 		Vertex.Position[1] = Position[1];
 		Vertex.Position[2] = Position[2];
@@ -107,7 +105,7 @@ namespace RSim::AssetBaker
 		Vertex.Normal[2] = Normal[2];
 	}
 
-	AssetLib::MeshInfo MeshBaker::GetMeshInfo(std::vector<AssetLib::Vertex_F32PNCV> const& Vertices,
+	AssetLib::MeshInfo MeshBaker::CreateMeshInfo(std::vector<AssetLib::Vertex_F32PNCV> const& Vertices,
 	                                          std::vector<uint32_t> const& Indices, std::string const& OriginalFile)
 	{
 		AssetLib::MeshInfo Info;
@@ -115,6 +113,7 @@ namespace RSim::AssetBaker
 		Info.CompressionMode = AssetLib::CompressionMode::LZ4;
 		Info.IndexBufferSizeInBytes = Indices.size() * sizeof(uint32_t);
 		Info.IndexSize = sizeof(uint32_t);
+		Info.IndexCount = Indices.size();
 		Info.VertexBufferSizeInBytes = Vertices.size() * AssetLib::MeshInfo::VertexStride;
 		Info.OriginalFile = OriginalFile;
 		return Info;

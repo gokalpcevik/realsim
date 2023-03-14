@@ -39,8 +39,6 @@ RealSimInteractive::RealSimInteractive(CommandLineArgs args) : Application(args)
 
 RSim::ReturnCode RealSimInteractive::OnInit()
 {
-	MeshAsset = AssetLib::LoadBinaryFile("Assets/donut0.rsim");
-	MeshInfo = AssetLib::ReadMeshInfo(MeshAsset);
 	return Application::OnInit();
 }
 

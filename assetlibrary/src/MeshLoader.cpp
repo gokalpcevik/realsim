@@ -10,12 +10,21 @@ namespace RSim::AssetLib
 	MeshInfo ReadMeshInfo(AssetLib::Asset const& AssetFile)
 	{
 		MeshInfo info;
-
-		nlohmann::json metadata = nlohmann::json::parse(AssetFile.Metadata);
+		nlohmann::json metadata;
+		try
+		{
+			metadata = nlohmann::json::parse(AssetFile.Metadata);
+		}
+		catch(nlohmann::json::exception const& e)
+		{
+			std::cerr << e.what() << std::endl;
+			throw std::exception();
+		}
 
 		info.VertexBufferSizeInBytes = metadata["vertex_buffer_size"];
 		info.IndexBufferSizeInBytes = metadata["index_buffer_size"];
 		info.IndexSize = (uint8_t)metadata["index_size"];
+		info.IndexCount = metadata["index_count"];
 		info.OriginalFile = metadata["original_file"];
 
 		std::string compressionString = metadata["compression"];
@@ -38,6 +47,7 @@ namespace RSim::AssetLib
 		metadata["vertex_buffer_size"] = Info.VertexBufferSizeInBytes;
 		metadata["index_buffer_size"] = Info.IndexBufferSizeInBytes;
 		metadata["index_size"] = Info.IndexSize;
+		metadata["index_count"] = Info.IndexCount;
 		metadata["original_file"] = Info.OriginalFile;
 
 		size_t fullsize = Info.VertexBufferSizeInBytes + Info.IndexBufferSizeInBytes;
