@@ -63,6 +63,7 @@ namespace RSim::ECS
     {
         RSIM_ASSERTM(*this != Child, "An entity cannot be both its parent and child.");
         Link& childLink = Child.GetComponent<Link>();
+        RSIM_ASSERTM(childLink.Parent == entt::null,"The child that is to be added already has a parent.");
         Link& parentLink = GetComponent<Link>();
         // Set the child's parent to this
     	childLink.Parent = *this;
@@ -82,12 +83,19 @@ namespace RSim::ECS
         else
         {
         	entt::entity PreviousSibling{ parentLink.FirstChild};
-            do
+            while(PreviousSibling != entt::null)
             {
                 RSIM_ASSERTM(PreviousSibling != Child, "The entity you are trying to link is already a child.");
-                PreviousSibling = m_Scene->GetComponent<Link>(PreviousSibling).NextSibling;
+                entt::entity NextSibling = m_Scene->GetComponent<Link>(PreviousSibling).NextSibling;
+                if(NextSibling != entt::null)
+                {
+                    PreviousSibling = NextSibling;
+                }
+                else
+                {
+                    break;
+                }
             }
-            while (PreviousSibling != entt::null);
             Link& PrevSiblingLink = m_Scene->GetComponent<Link>(PreviousSibling);
             // Update the last child's next sibling to point to the added child
         	PrevSiblingLink.NextSibling = Child;
