@@ -5,7 +5,7 @@
 # correct definitions. Here only used to make version number available to
 # the source code. Include "exampleConfig.h" (no .in suffix) in the source.
 configure_file (
-  "${PROJECT_SOURCE_DIR}/include/RealSimConfig.h.in"
+  "${PROJECT_SOURCE_DIR}/src/realsim/RealSimConfig.h.in"
   "${PROJECT_BINARY_DIR}/RealSimConfig.h"
 )
 # add the binary tree to the search path for include files

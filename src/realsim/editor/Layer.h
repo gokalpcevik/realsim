@@ -28,5 +28,4 @@ namespace RSim::Editor
 		virtual void OnRenderUI(Core::Application* app, ECS::Scene* scene, Graphics::Renderer* renderer) = 0;
 		virtual void OnShutdown(Core::Application* app) = 0;
 	};
-
 }

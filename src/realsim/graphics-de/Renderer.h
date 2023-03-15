@@ -6,6 +6,7 @@
 #include "GraphicsUtilities.h"
 #include "RefCntAutoPtr.hpp"
 #include "MapHelper.hpp"
+#include "TextureLoader.h"
 
 #include "realsim/graphics-de/EngineInitialization.h"
 #include "realsim/graphics-de/Drawable.h"
@@ -37,7 +38,7 @@ namespace RSim::Graphics
 		~Renderer();
 
 		void Clear(f32 color[]);
-		void Present(u32 syncInterval);
+		void Present();
 		void RenderScene(ECS::Scene* pScene);
 
 		[[nodiscard]] std::string GetEngineName() const { return Graphics::GetEngineName(m_DeviceType); }
@@ -48,9 +49,10 @@ namespace RSim::Graphics
 
 		Drawable* CreateDrawable(AssetLib::MeshInfo* pMeshInfo, AssetLib::Asset* pAssetInfo);
 
+        void SetVSyncState(uint32_t Enable) { m_VSyncEnabled = Enable; }
 		void Resize(u32 width,u32 height);
 	private:
-		float m_Gamma = 1.4f;
+		uint32_t m_VSyncEnabled = 1;
 
 		Core::Window* pWindow;
 

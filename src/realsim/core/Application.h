@@ -101,6 +101,7 @@ namespace RSim::Core
         std::unique_ptr<ECS::Scene> m_Scene;
         ECS::Entity m_Box;
         ECS::Entity m_Box2;
+        ECS::Entity m_Box3;
         ECS::Entity m_Camera;
         ECS::PerspectiveCameraComponent* pCamera;
 

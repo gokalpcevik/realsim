@@ -89,7 +89,7 @@ set(SOURCES          # All .cpp files in src/
 )
 
 add_library(${RSIM_LIB} OBJECT ${SOURCES})
-target_include_directories(${RSIM_LIB} PUBLIC ${PROJECT_SOURCE_DIR}/include)
+target_include_directories(${RSIM_LIB} PUBLIC ${PROJECT_SOURCE_DIR}/src)
 target_compile_options(${RSIM_LIB} PRIVATE -DUNICODE -DENGINE_DLL)
 # There's also (probably) doctests within the library, so we need to see this as well.
 target_link_libraries(${RSIM_LIB} PUBLIC
@@ -113,6 +113,7 @@ target_link_libraries(${RSIM_LIB} PUBLIC
         Diligent-GraphicsEngineVk-shared
         Diligent-GraphicsAccessories
         Diligent-GraphicsTools
+        Diligent-TextureLoader
         Diligent-Imgui
         )
 

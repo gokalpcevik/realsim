@@ -34,13 +34,13 @@ namespace RSim::Editor
 	private:
 		float m_NearZ = 0.1f;
 		float m_FarZ = 100.0f;
-		float m_NormalStrafeSpeed = 400.0f;
-		float m_FastStrafeSpeed = 700.0f;
+		float m_NormalStrafeSpeed = 700.0f;
+		float m_FastStrafeSpeed = 1200.0f;
 		float m_StrafeSpeed = m_NormalStrafeSpeed;
 		float m_FOVHalfAngle = 45.0f;
 		float m_MaxFOV = m_FOVHalfAngle;
 		float m_MinFOV = 22.5f;
-		float m_Sensitivity = 16.0f;
+		float m_Sensitivity = 24.0f;
 		bool m_Enabled = false;
 
 		float m_Yaw = 0.0f;
