@@ -41,8 +41,13 @@ namespace RSim::AssetBaker
 		// aiFace consists of two uint32_t's so it might be better to pass it by value.
 		// but clang-tidy says to pass by const ref. so I dunno
 		// TODO: Investigate.
-		static inline void SetIndicesFromFace(std::vector<uint32_t>& indices, aiFace const& pFace, size_t BaseFaceIndex);
-		static inline void SetVertexFromAssimp(AssetLib::Vertex_F32PNCV& Vertex, aiVector3D const& Position, aiVector3D const& Normal, aiVector3D const& UV);
+		static inline void InitIndicesFromFace(std::vector<uint32_t>& indices, aiFace const& pFace, size_t BaseFaceIndex);
+
+        static inline void InitVertexFromAssimp(AssetLib::Vertex_F32PNCV& Vertex,
+                                                aiVector3D const& Position,
+                                                aiVector3D const& Normal,
+                                                aiColor3D const& Color,
+                                                aiVector3D const& UV);
 		static inline AssetLib::MeshInfo CreateMeshInfo(std::vector<AssetLib::Vertex_F32PNCV> const& Vertices, std::vector<uint32_t> const& Indices, std::string const& OriginalFile);
 	};
 }

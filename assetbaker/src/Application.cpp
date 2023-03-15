@@ -18,7 +18,7 @@ namespace RSim::AssetBaker
 
         auto const generic = GetGenericOptions();
         auto const config  = GetConfigOptions();
-		auto const hidden  = GetHiddenOptions();
+        auto const hidden  = GetHiddenOptions();
 
         po::options_description CommandLineOptions;
         CommandLineOptions.add(generic).add(config).add(hidden);
