@@ -1,4 +1,5 @@
 #include "realsim/graphics-de/Renderer.h"
+#include "realsim/graphics-de/Material.h"
 
 namespace RSim::Graphics
 {
@@ -53,8 +54,6 @@ namespace RSim::Graphics
 		m_pImmediateContext->ClearRenderTarget(pRTV, ClearColor, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 		m_pImmediateContext->ClearDepthStencil(pDSV, CLEAR_DEPTH_FLAG, 1.f, 0, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 
-		auto& OffscreenDesc = m_pOffScreenSRV->GetTexture()->GetDesc();
-		
 		ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 1.0f));
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0.0f,0.0f });
 		ImGui::Begin("Viewport");
@@ -77,9 +76,9 @@ namespace RSim::Graphics
 		m_pImmediateContext->ClearDepthStencil(m_pOffScreenDSV, CLEAR_DEPTH_FLAG, 1.f, 0, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 	}
 
-	void Renderer::Present(u32 syncInterval)
+	void Renderer::Present()
 	{
-		m_pSwapChain->Present(syncInterval);
+		m_pSwapChain->Present(m_VSyncEnabled);
 	}
 
 	void Renderer::RenderScene(ECS::Scene* pScene)
@@ -89,7 +88,7 @@ namespace RSim::Graphics
 		auto const cameraView = registry.view<ECS::PerspectiveCameraComponent>();
 		ECS::PerspectiveCameraComponent const* cameraComponent = nullptr;
 
-		if (cameraView.size() == 0)
+		if (cameraView.empty())
 		{
 			rsim_warn("There is no camera to render the scene with.");
 			return;
@@ -119,17 +118,16 @@ namespace RSim::Graphics
 
 			ECS::Entity Entity(pScene, entity);
 
-			TransformationData data;
 
 			float4x4 View;
 			float4x4 Projection;
 			DirectX::XMStoreFloat4x4((DirectX::XMFLOAT4X4*)&View, cameraComponent->GetViewMatrix());
 			DirectX::XMStoreFloat4x4((DirectX::XMFLOAT4X4*)&Projection, cameraComponent->GetProjectionMatrix(aspectRatio));
 
-			data.WorldViewProjectionMatrix = (Entity.GetWorldTransform() * View * Projection).Transpose();
-			data.ModelToWorldMatrix = Entity.GetWorldTransform().Transpose();
-
 			{
+                TransformationData data;
+                data.WorldViewProjectionMatrix = (Entity.GetWorldTransform() * View * Projection).Transpose();
+                data.ModelToWorldMatrix = Entity.GetWorldTransform().Transpose();
 				MapHelper<TransformationData> TransformationCBMap(m_pImmediateContext, MC.Drawable->TransformationBuffer, MAP_WRITE, MAP_FLAG_DISCARD);
 				*TransformationCBMap = data;
 			}
@@ -212,6 +210,14 @@ namespace RSim::Graphics
 			ShaderCI.Desc.Name = "Mesh VS";
 			ShaderCI.FilePath = "shaders/blinnphong.vs.hlsl";
 			m_pRenderDevice->CreateShader(ShaderCI, &pVS);
+
+            for(size_t i = 0; i < pVS->GetResourceCount(); ++i)
+            {
+                ShaderResourceDesc desc;
+                pVS->GetResourceDesc(i,desc);
+                rsim_trace(desc.Name);
+            }
+
 			// Create dynamic uniform buffer that will store our transformation matrix
 			// Dynamic buffers can be frequently updated by the CPU
 			CreateUniformBuffer(m_pRenderDevice, sizeof(TransformationData), "VS constants CB", &drawable->TransformationBuffer);
