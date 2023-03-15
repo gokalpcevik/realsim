@@ -11,10 +11,13 @@ namespace RSim::Graphics
 		auto pImGuiImpl = std::make_unique<ImGuiImplDiligent>(pDevice, BackBufferFmt, DepthBufferFmt);
 		ImGui_ImplSDL2_InitForD3D(pWindow->GetSDLWindow());
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
+        io.IniFilename = "imgui.ini";
 		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 		io.Fonts->Clear();
-		io.Fonts->AddFontFromFileTTF("font_assets/Asap-Regular.ttf", 18.0f);
-		io.Fonts->AddFontFromFileTTF("font_assets/Asap-Light.ttf", 18.0f);
+        io.Fonts->AddFontFromFileTTF("font_assets/EncodeSans-Regular.ttf", 18.0f);
+        io.Fonts->AddFontFromFileTTF("font_assets/EncodeSans-Bold.ttf", 18.0f);
+        io.Fonts->AddFontFromFileTTF("font_assets/EncodeSans-Bold.ttf", 24.0f);
+		io.Fonts->AddFontFromFileTTF("font_assets/EncodeSans-Light.ttf", 18.0f);
 		pImGuiImpl->UpdateFontsTexture();
 		StyleColors();
 		return std::move(pImGuiImpl);
