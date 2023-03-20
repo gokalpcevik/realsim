@@ -9,12 +9,17 @@ namespace RSim::ECS
 
     Entity::Entity(Scene *pScene, entt::entity entity) : m_EntityHandle(entity), m_Scene(pScene)
     {
-
+        
     }
 
     bool Entity::IsNull() const
     {
         return *this == Entity::Null;
+    }
+
+    bool Entity::IsFirstChild() const
+    {
+        return *this == GetParent().GetFirstChild();
     }
 
     Entity Entity::GetParent() const
@@ -105,6 +110,8 @@ namespace RSim::ECS
         	childLink.NextSibling = entt::null;
             // Increase the # of children
         	parentLink.NumChildren++;
+            // Set the last child to the added child
+            parentLink.LastChild = Child;
             // Since we are inserting at the end, index is # children minus one
             childLink.ChildIndex = parentLink.NumChildren - 1;
             // Parent ---------------------------------------------------
@@ -147,13 +154,13 @@ namespace RSim::ECS
         else if (prevSibling == entt::null && nextSibling == entt::null)
         {
             parentLink.FirstChild = entt::null;
+            parentLink.LastChild = entt::null;
         }
 
         childLink.NextSibling = entt::null;
-        childLink.FirstChild = entt::null;
         childLink.Parent = entt::null;
         childLink.ChildIndex = Link::InvalidChildIndex();
-        --parentLink.NumChildren;
+        parentLink.NumChildren--;
 
     	return *this;
     }
@@ -210,7 +217,7 @@ namespace RSim::ECS
 
 	Dl::float4x4 Entity::GetWorldTransform() const
     {
-        if (GetParent() == Null) return GetLocalTransform();
+        if (GetParent().IsNull()) return GetLocalTransform();
 
         Entity parent = GetParent();
         Dl::float4x4 Transform = GetLocalTransform();
@@ -241,6 +248,6 @@ namespace RSim::ECS
 
     void Entity::SetName(std::string Name) const
     {
-        m_Scene->GetComponent<NameComponent>(*this).Name = Name;
+        m_Scene->GetComponent<NameComponent>(*this).Name = std::move(Name);
     }
 }

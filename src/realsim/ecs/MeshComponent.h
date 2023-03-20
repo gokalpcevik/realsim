@@ -12,13 +12,13 @@ namespace RSim::ECS
 	struct MaterialConstants
 	{
 		Diligent::float4 Color{ 1.0f,1.0f,1.0f,1.0f };
-		float Shininess = 1.0f;
+		float Shininess = 32.0f;
 	};
 
 	struct MeshComponent
 	{
-		AssetLib::MeshInfo* pMeshInfo;
-		AssetLib::Asset* pAsset;
+		AssetLib::MeshInfo pMeshInfo;
+		AssetLib::AssetHandle hAsset;
 		Graphics::Drawable* Drawable;
 		MaterialConstants Material{};
 	};

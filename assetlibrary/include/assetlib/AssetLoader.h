@@ -4,6 +4,7 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <memory>
 #include "assetlib/FileHelper.h"
 
 namespace RSim::AssetLib
@@ -76,6 +77,9 @@ namespace RSim::AssetLib
         static Asset const Null;
     };
 
+    using AssetRef = std::shared_ptr<Asset>;
+
 	bool SaveBinaryFile(std::filesystem::path const& Path, Asset const& file);
-	Asset LoadBinaryFile(std::filesystem::path const& Path);
+    Asset LoadBinaryFile(std::filesystem::path const& Path);
+    AssetRef LoadBinaryFileRef(std::filesystem::path const& Path);
 }

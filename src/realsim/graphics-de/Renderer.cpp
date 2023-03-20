@@ -85,6 +85,8 @@ namespace RSim::Graphics
 	{
 		entt::registry& registry = pScene->GetEnTTRegistry();
 
+
+
 		auto const cameraView = registry.view<ECS::PerspectiveCameraComponent>();
 		ECS::PerspectiveCameraComponent const* cameraComponent = nullptr;
 
@@ -117,7 +119,6 @@ namespace RSim::Graphics
 			float aspectRatio = fWidth / fHeight;
 
 			ECS::Entity Entity(pScene, entity);
-
 
 			float4x4 View;
 			float4x4 Projection;
@@ -159,10 +160,12 @@ namespace RSim::Graphics
 
 			DrawIndexedAttribs DrawAttrs;     // This is an indexed draw call
 			DrawAttrs.IndexType = VT_UINT32; // Index type
-			DrawAttrs.NumIndices = MC.pMeshInfo->IndexCount;
+			DrawAttrs.NumIndices = MC.pMeshInfo.IndexCount;
 			// Verify the state of vertex and index buffers
 			DrawAttrs.Flags = DRAW_FLAG_VERIFY_ALL;
-			m_pImmediateContext->DrawIndexed(DrawAttrs);
+
+
+            m_pImmediateContext->DrawIndexed(DrawAttrs);
 		}
 	}
 

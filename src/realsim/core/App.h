@@ -11,6 +11,7 @@
 #include "realsim/core/Logger.h"
 
 #include "realsim/graphics-de/Renderer.h"
+#include "realsim/graphics-de/AssetCache.h"
 
 #include "realsim/ecs/Scene.h"
 #include "realsim/ecs/Entity.h"
@@ -21,9 +22,9 @@
 #include "assetlib/AssetLoader.h"
 #include "assetlib/MeshLoader.h"
 
-#include "realsim/editor/CameraController.h"
-#include "realsim/editor/LayerStack.h"
-#include "realsim/editor/EditorLayer.h"
+#include "realsim/ui/CameraController.h"
+#include "realsim/ui/LayerStack.h"
+#include "realsim/ui/EditorLayer.h"
 
 #include "RealSimConfig.h"
 
@@ -31,10 +32,9 @@
 #define REALSIM_EXIT_FAIL (EXIT_FAILURE)
 #define REALSIM_EXIT_CONTINUE (2)
 
-
 namespace RSim::Core
 {
-    class Application
+    class App
     {
     public:
         struct UpdateStatistics
@@ -58,21 +58,24 @@ namespace RSim::Core
         };
 
     public:
-        static Application& Get()
+        static App& Get()
         {
-            static Application instance;
+            static App instance;
             return instance;
         }
-        Application();
-        Application(Application const&) = delete;
-        Application operator=(Application const&) = delete;
+        App();
+        App(App const&) = delete;
+        App operator=(App const&) = delete;
 
         ReturnCode Run();
         virtual void Shutdown();
 
         void SetMainWindow(std::unique_ptr<Window> window);
         void AddWindow(std::unique_ptr<Window> window);
-
+        /**
+         * \brief Windows macro SetConsoleTitle messes stuff up, so it's name is as below.
+         * \param Title Title
+         */
         static void SetRealSimConsoleTitle(LPCTSTR Title);
 
         [[nodiscard]] Graphics::Renderer& GetMainRenderer() const { return *m_Renderer; }
@@ -80,7 +83,7 @@ namespace RSim::Core
         [[nodiscard]] UpdateStatistics GetStats() const { return m_UpdateStats; }
 
     private:
-        virtual ~Application() = default;
+        virtual ~App() = default;
     protected:
         virtual ReturnCode OnInit();
         virtual void OnUpdate();
@@ -97,12 +100,8 @@ namespace RSim::Core
          * \brief Log the current RealSim core library version.
          */
         static void LogLibraryVersion();
-        /**
-         * \brief Windows macro SetConsoleTitle messes stuff up, so it's name is as below.
-         * \param Title Title
-         */
+
     protected:
-        CommandLineArgs m_StartArgs{};
         bool m_Running = true;
         UpdateStatistics m_UpdateStats{};
 
@@ -110,6 +109,7 @@ namespace RSim::Core
         std::vector<std::unique_ptr<Window>> m_OtherWindows;
 
         std::unique_ptr<Graphics::Renderer> m_Renderer;
+        Graphics::AssetCache m_AssetCache;
 
         std::unique_ptr<ECS::Scene> m_Scene;
 
@@ -120,10 +120,18 @@ namespace RSim::Core
         ECS::Entity m_Camera;
         ECS::PerspectiveCameraComponent* pCamera{};
 
-        Editor::CameraController m_CameraController;
-        Editor::LayerStack m_LayerStack;
+        UI::CameraController m_CameraController;
+        UI::LayerStack m_LayerStack;
 
         AssetLib::MeshInfo SusanneMeshInfo;
-        AssetLib::Asset SusanneAsset;
+        AssetLib::AssetRef SusanneAsset;
     };
+}
+
+namespace RSim
+{
+    static Core::App& GetApp()
+    {
+        return Core::App::Get();
+    }
 }

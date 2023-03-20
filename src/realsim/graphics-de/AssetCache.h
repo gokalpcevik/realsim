@@ -1,18 +1,26 @@
-//
-// Created by GOKALP on 3/20/2023.
-//
+#pragma once
+#include "assetlib/AssetLoader.h"
+#include "assetlib/MeshLoader.h"
+#include "google/dense_hash_map"
 
-#ifndef REALSIM_ASSETCACHE_H
-#define REALSIM_ASSETCACHE_H
+namespace RSim::Graphics
+{
+    namespace fs = std::filesystem;
 
-namespace RSim {
-    namespace Graphics {
+    AssetLib::AssetHandle GetHandleFromFile(fs::path const& path);
 
-        class AssetCache {
+   class AssetCache
+   {
+   public:
+       AssetCache();
 
-        };
+       bool IsValid(AssetLib::AssetHandle handle);
+       AssetLib::AssetRef Get(AssetLib::AssetHandle handle);
+       AssetLib::AssetRef Load(fs::path const& path);
+       void Insert(AssetLib::AssetRef const& asset);
+       void Delete(AssetLib::AssetHandle handle);
+   private:
+        google::dense_hash_map<AssetLib::AssetHandle, AssetLib::AssetRef> m_AssetCache;
+   };
+}
 
-    } // RSim
-} // Graphics
-
-#endif //REALSIM_ASSETCACHE_H

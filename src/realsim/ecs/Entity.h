@@ -9,6 +9,7 @@
 #include "realsim/core/Assert.h"
 #include "realsim/ecs/Scene.h"
 
+
 namespace RSim::ECS
 {
     struct Link;
@@ -22,9 +23,11 @@ namespace RSim::ECS
      */
     class Entity
     {
+    private:
+        entt::entity m_EntityHandle{entt::null};
+        Scene *m_Scene{nullptr};
     public:
         Entity() = default;
-
         Entity(Scene *pScene, entt::entity entity);
 
         bool operator==(Entity const& rhs) const { return rhs.m_Scene == m_Scene && rhs.m_EntityHandle == m_EntityHandle; }
@@ -38,6 +41,8 @@ namespace RSim::ECS
         auto AddComponent(Args &&...args) -> T &;
 
         [[nodiscard]] bool IsNull() const;
+
+        [[nodiscard]] bool  IsFirstChild() const;
 
         [[nodiscard]] Entity GetParent() const;
         [[nodiscard]] Entity GetTopParent() const;
@@ -83,9 +88,79 @@ namespace RSim::ECS
         {
             return m_EntityHandle;
         }
-    private:
-        entt::entity m_EntityHandle{entt::null};
-        Scene *m_Scene{nullptr};
+
+        struct Iterator
+        {
+            using difference_type   = std::ptrdiff_t;
+            using value_type        = ECS::Entity;
+            using pointer           = ECS::Entity*;
+            using reference         = ECS::Entity&;
+        };
+
+        struct SiblingIterator : public Iterator
+        {
+            using iterator_category = std::bidirectional_iterator_tag;
+
+            explicit SiblingIterator(pointer ptr) : m_Ptr(ptr) {}
+
+            reference operator*() const noexcept { return *operator->(); }
+            pointer operator->() const noexcept
+            {
+                VERIFY(m_Ptr,"cannot dereference value-initialized entity-sibling iterator");
+                return m_Ptr;
+            }
+
+            SiblingIterator& operator++() noexcept
+            {
+                VERIFY(m_Ptr,"cannot increment value-initialized entity-sibling iterator");
+                *m_Ptr = m_Ptr->GetNextSibling();
+                return *this;
+            }
+
+            SiblingIterator operator++(int) noexcept // NOLINT(cert-dcl21-cpp)
+            {
+                auto tmp(*this);
+                ++(*this);
+                return tmp;
+            }
+
+            SiblingIterator& operator--() noexcept
+            {
+                VERIFY(m_Ptr,"cannot decrement value-initialized entity-sibling iterator");
+                *m_Ptr = m_Ptr->GetPreviousSibling();
+                volatile auto& name= m_Ptr->GetName();
+                return *this;
+            }
+
+            SiblingIterator operator--(int) noexcept // NOLINT(cert-dcl21-cpp)
+            {
+                auto tmp(*this);
+                --(*this);
+                return tmp;
+            }
+
+            [[nodiscard]] friend bool operator==(SiblingIterator const& Lhs, SiblingIterator const& Rhs) noexcept
+            {
+                return *Lhs == *Rhs;
+            }
+
+            [[nodiscard]] friend bool operator!=(SiblingIterator const& Lhs, SiblingIterator const& Rhs) noexcept
+            {
+                return *Lhs != *Rhs;
+            }
+        private:
+            pointer m_Ptr{};
+        };
+
+        [[nodiscard]] SiblingIterator begin() noexcept
+        {
+            return SiblingIterator(this);
+        }
+
+        [[nodiscard]] static SiblingIterator end() noexcept
+        {
+            return SiblingIterator(const_cast<Entity*>(&Entity::Null));
+        }
     };
 
     template<typename T>

@@ -1,29 +1,29 @@
-﻿#include "realsim/core/Application.h"
-#include "realsim/utils/RandomGenerator.h"
+﻿#include "realsim/core/App.h"
+#include "realsim/utils/Random.h"
 
 namespace RSim::Core
 {
-	auto Application::UpdateStatistics::GetFPS() const -> float
+	auto App::UpdateStatistics::GetFPS() const -> float
 	{
 		return 1.0f / ((float)m_FrameTime / (float)SDL_GetPerformanceFrequency());
 	}
 
-	auto Application::UpdateStatistics::GetFrameTime() const -> float
+	auto App::UpdateStatistics::GetFrameTime() const -> float
 	{
 		return (float)m_FrameTime / (float)SDL_GetPerformanceFrequency() * 1000.0f;
 	}
 
-	auto Application::UpdateStatistics::GetFrameTimeSeconds() const -> float
+	auto App::UpdateStatistics::GetFrameTimeSeconds() const -> float
 	{
 		return (float)m_FrameTime / (float)SDL_GetPerformanceCounter();
 	}
 
-	Application::Application()
+	App::App()
 	{
-		m_LayerStack.AddLayer(new Editor::EditorLayer());
+		m_LayerStack.AddLayer(new UI::EditorLayer());
 	}
 
-	ReturnCode Application::Run()
+	ReturnCode App::Run()
 	{
 		Logger::Init();
 		LogLibraryVersion();
@@ -42,13 +42,16 @@ namespace RSim::Core
 		m_Camera.SetName("Scene Primary Camera");
 		pCamera = &m_Camera.AddComponent<ECS::PerspectiveCameraComponent>(true);
 		pCamera->NearZ = 0.01f;
+        pCamera->FOVHalfAngle = 60.0f;
 		pCamera->SetViewMatrix(DirectX::XMMatrixLookAtLH(
 			DirectX::XMVectorSet(-5.0f, 10.0f, -10.0f, 1.0f),
 			DirectX::XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f),
 			DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f)));
 
-        SusanneAsset = AssetLib::LoadBinaryFile("mesh_assets/monkey0.rsim");
-        SusanneMeshInfo = ReadMeshInfo(SusanneAsset);
+        //SusanneAsset = AssetLib::LoadBinaryFile("mesh_assets/monkey0.rsim");
+
+        SusanneAsset = m_AssetCache.Load("mesh_assets/monkey0.rsim");
+        SusanneMeshInfo = ReadMeshInfo(*SusanneAsset);
 
         float shininess = 1.0f;
         for (size_t i = 0; i < 8; ++i)
@@ -56,16 +59,20 @@ namespace RSim::Core
             for (size_t j = 0; j < 8; ++j)
             {
                 m_Monkeys[i][j] = m_Scene->CreateEntity();
+                if(j != 0)
+                {
+                    m_Monkeys[i][0].AddChild(m_Monkeys[i][j]);
+                }
                 auto& mesh = m_Monkeys[i][j].AddComponent<ECS::MeshComponent>();
-                mesh.Drawable = m_Renderer->CreateDrawable(&SusanneMeshInfo, &SusanneAsset);
-                mesh.pAsset = &SusanneAsset;
-                mesh.pMeshInfo = &SusanneMeshInfo;
+                mesh.Drawable = m_Renderer->CreateDrawable(&SusanneMeshInfo, SusanneAsset.get());
+                mesh.hAsset = SusanneAsset->HashValue;
+                mesh.pMeshInfo = SusanneMeshInfo;
                 auto& tc = m_Monkeys[i][j].GetComponent<ECS::TransformComponent>();
                 auto& NameComponent = m_Monkeys[i][j].GetComponent<ECS::NameComponent>();
                 NameComponent.Name = fmt::format("Susanne {}-{}",i,j);
-                float r = std::cosf(Util::RandomGenerator::RandomFloat()) / 2.5f + 0.5f;
-                float g = std::cosf(Util::RandomGenerator::RandomFloat()) / 2.5f + 0.5f;
-                float b = std::cosf(Util::RandomGenerator::RandomFloat()) / 2.5f + 0.5f;
+                float r = std::cosf(Util::Random::RandomFloat()) / 2.5f + 0.5f;
+                float g = std::cosf(Util::Random::RandomFloat()) / 2.5f + 0.5f;
+                float b = std::cosf(Util::Random::RandomFloat()) / 2.5f + 0.5f;
                 mesh.Material.Color = { r, g, b, 1.0f};
                 mesh.Material.Shininess = shininess;
                 shininess += 2.0f;
@@ -74,6 +81,13 @@ namespace RSim::Core
             }
         }
 
+        ECS::Entity parent = m_Monkeys[0][0];
+        ECS::Entity child = parent.GetFirstChild();
+
+        for(auto it = child.begin(); it != ECS::Entity::end(); ++it)
+        {
+            rsim_trace(it->GetName());
+        }
 
 #if 0
 		m_Box = m_Scene->CreateEntity();
@@ -148,35 +162,36 @@ namespace RSim::Core
 		return REALSIM_EXIT_SUCCESS;
 	}
 
-	void Application::Shutdown()
+	void App::Shutdown()
 	{
 		m_Running = false;
 	}
 
-	void Application::SetMainWindow(std::unique_ptr<Window> window)
+	void App::SetMainWindow(std::unique_ptr<Window> window)
 	{
 		m_MainWindow = std::move(window);
 	}
 
-	void Application::AddWindow(std::unique_ptr<Window> window)
+	void App::AddWindow(std::unique_ptr<Window> window)
 	{
 		m_OtherWindows.emplace_back(std::move(window));
 	}
 
-	ReturnCode Application::OnInit()
+	ReturnCode App::OnInit()
 	{
 		m_Renderer = std::make_unique<Graphics::Renderer>(m_MainWindow.get());
 		m_MainWindow->SetTitle(fmt::format("RealSim Interactive - {}", m_Renderer->GetEngineName()));
 		return REALSIM_EXIT_SUCCESS;
 	}
 
-	void Application::OnUpdate()
+	void App::OnUpdate()
 	{
 		if (Input::IsKeyPressed(SDL_SCANCODE_ESCAPE))
 		{
 			Shutdown();
 		}
 
+        // Camera controller enable/disable based on input
 		{
 			// Skip the first few frames because delta time is extremely big and causes issues
 			if (m_UpdateStats.m_UpdateCounter < 5)
@@ -191,7 +206,7 @@ namespace RSim::Core
 		}
 	}
 
-	void Application::Handle_SDL_Events(SDL_Event const& e)
+	void App::Handle_SDL_Events(SDL_Event const& e)
 	{
 		if (e.type == SDL_QUIT)
 		{
@@ -221,7 +236,7 @@ namespace RSim::Core
 		}
 	}
 
-	void Application::CalculateUpdateStatistics()
+	void App::CalculateUpdateStatistics()
 	{
 		auto const counter = SDL_GetPerformanceCounter();
 		m_UpdateStats.m_FrameTime = counter - m_UpdateStats.m_LastTickCount;
@@ -229,7 +244,7 @@ namespace RSim::Core
 		++m_UpdateStats.m_UpdateCounter;
 	}
 
-	void Application::LogLibraryVersion()
+	void App::LogLibraryVersion()
 	{
 		rsim_info("Library Version {}.{}.{}",
 			RSIM_PROJECT_VERSION_MAJOR,
@@ -237,7 +252,7 @@ namespace RSim::Core
 			RSIM_PROJECT_VERSION_PATCH);
 	}
 
-    void Application::SetRealSimConsoleTitle(LPCTSTR Title)
+    void App::SetRealSimConsoleTitle(LPCTSTR Title)
 	{
 		::SetConsoleTitle(Title);
 	}

@@ -1,4 +1,6 @@
 #pragma once
+#include <future>
+
 #include "RenderDevice.h"
 #include "SwapChain.h"
 #include "EngineFactory.h"
@@ -52,7 +54,7 @@ namespace RSim::Graphics
         void SetVSyncState(uint32_t Enable) { m_VSyncEnabled = Enable; }
 		void Resize(u32 width,u32 height);
 	private:
-		uint32_t m_VSyncEnabled = 1;
+		uint32_t m_VSyncEnabled = 0;
 
 		Core::Window* pWindow;
 

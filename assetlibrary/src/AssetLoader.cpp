@@ -40,7 +40,7 @@ namespace RSim::AssetLib
 	{
 		Asset asset;
 		std::ifstream infile;
-		infile.open(Path, std::ios::binary);
+		infile.open(Path, std::ios::binary|std::ios::in);
 
 		if (!infile.is_open()) return Asset::Null;
 
@@ -68,4 +68,36 @@ namespace RSim::AssetLib
 
 		return asset;
 	}
+
+    AssetRef LoadBinaryFileRef(const std::filesystem::path &Path) {
+        AssetRef asset = std::make_shared<Asset>();
+        std::ifstream infile;
+        infile.open(Path, std::ios::binary|std::ios::in);
+
+        if (!infile.is_open()) return nullptr;
+
+        infile.seekg(0);
+
+        infile.read(asset->Type, 4);
+
+        infile.read((char*)&asset->Version, sizeof(uint32_t));
+
+        uint32_t jsonLen = 0;
+        infile.read((char*)&jsonLen, sizeof(uint32_t));
+
+        uint32_t blobLen = 0;
+        infile.read((char*)&blobLen, sizeof(uint32_t));
+
+        asset->Metadata.resize(jsonLen);
+
+        infile.read(asset->Metadata.data(), jsonLen);
+
+        asset->BinaryBlob.resize(blobLen);
+        infile.read(asset->BinaryBlob.data(), blobLen);
+
+        asset->TotalCompressedSizeInBytes = GetFileSize(Path);
+        asset->HashValue = hash_value(Path);
+
+        return std::move(asset);
+    }
 }
