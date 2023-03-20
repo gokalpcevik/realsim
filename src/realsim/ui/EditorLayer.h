@@ -1,10 +1,11 @@
 #pragma once
-#include "realsim/editor/Layer.h"
+#include "realsim/ui/Layer.h"
+#include "realsim/ui/SceneViewWidget.h"
 #include "realsim/ecs/Entity.h"
 #include "realsim/ecs/Scene.h"
 #include "realsim/graphics-de/Renderer.h"
 
-namespace RSim::Editor
+namespace RSim::UI
 {
 	class EditorLayer : public ILayer
 	{
@@ -17,13 +18,6 @@ namespace RSim::Editor
 		void OnShutdown() override;
 
     private:
-
-        void DrawSceneHierarchy(ECS::Scene* scene);
-        void DrawInspector(ECS::Scene* scene);
-        void SceneHierarchy_DrawChildrenRecursive(ECS::Entity parent, ECS::Scene *scene);
         void DrawStatistics(Graphics::Renderer* renderer) const;
-
-    private:
-        ECS::Entity m_SelectedEntity;
 	};
 }

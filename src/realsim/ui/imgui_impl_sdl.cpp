@@ -64,7 +64,7 @@
 //  2016-10-15: Misc: Added a void* user_data parameter to Clipboard function handlers.
 
 #include "imgui.h"
-#include "realsim/editor/imgui_impl_sdl.h"
+#include "realsim/ui/imgui_impl_sdl.h"
 
 // SDL
 #include <SDL.h>

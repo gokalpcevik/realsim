@@ -2,7 +2,7 @@
 #include <vector>
 #include "Layer.h"
 
-namespace RSim::Editor
+namespace RSim::UI
 {
 	class LayerStack
 	{

@@ -1,6 +1,6 @@
 #pragma once
 
-namespace RSim::Editor
+namespace RSim::UI
 {
 	class ILayer
 	{

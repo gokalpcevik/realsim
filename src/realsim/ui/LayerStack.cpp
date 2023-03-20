@@ -1,6 +1,6 @@
-#include "realsim/editor/LayerStack.h"
+#include "realsim/ui/LayerStack.h"
 
-namespace RSim::Editor
+namespace RSim::UI
 {
 	void LayerStack::OnInit() const
 	{
