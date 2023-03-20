@@ -1,7 +1,5 @@
-#include "realsim/editor/UILayer.h"
-#include "realsim/core/Application.h"
-#include "realsim/graphics-de/Renderer.h"
-#include "realsim/ecs/Entity.h"
+#include "realsim/editor/EditorLayer.h"
+#include "realsim/core/App.h"
 
 #define ENTITY_ID(x) (void*)(uint64_t)((x))
 
@@ -9,42 +7,45 @@ namespace RSim::Editor
 {
     using namespace ECS;
 
-    ECS::Entity m_SelectedEntity;
 
-	void UILayer::OnInitialize(Core::Application*)
+	void EditorLayer::OnInitialize()
 	{
 		
 	}
 
-	void UILayer::OnUpdate(Core::Application*, ECS::Scene*)
+	void EditorLayer::OnUpdate()
 	{
 
 	}
 
-	void UILayer::OnRender(Core::Application*, Graphics::Renderer*)
+	void EditorLayer::OnRender()
 	{
 
 	}
 
-	void UILayer::OnRenderUI(Core::Application* app, ECS::Scene* scene, Graphics::Renderer* renderer)
+	void EditorLayer::OnRenderUI()
 	{
+        auto& app = GetApp();
+        auto& renderer = app.GetMainRenderer();
+        auto& scene = app.GetCurrentScene();
+
 		if (ImGui::BeginMainMenuBar())
 		{
 			if (ImGui::BeginMenu("File"))
 			{
 				if(ImGui::MenuItem("Exit"))
-					app->Shutdown();
+					app.Shutdown();
 				ImGui::EndMenu();
 			}
 			ImGui::EndMainMenuBar();
 		}
 
-		RenderStatistics(app,renderer);
-	    RenderSceneView(scene);
-        RenderInspector(scene);
+		RenderStatistics(&renderer);
+	    RenderSceneView(&scene);
+        RenderInspector(&scene);
 	}
 
-    void UILayer::RenderSceneView(ECS::Scene* scene)
+    void EditorLayer::RenderSceneView(ECS::Scene* scene)
     {
         entt::registry& reg = scene->GetEnTTRegistry();
         ImGui::Begin("Scene View");
@@ -59,6 +60,8 @@ namespace RSim::Editor
 
                      if(parentLink.GetParent() == entt::null)
                      {
+                         entt::entity child = parentLink.GetFirstChild();
+                         if(child == entt::null) flags |= ImGuiTreeNodeFlags_Leaf;
                          bool opened = ImGui::TreeNodeEx(ENTITY_ID(entity),flags, "%s", name.Name.c_str());
                          if(ImGui::IsItemClicked())
                          {
@@ -66,7 +69,6 @@ namespace RSim::Editor
                          }
                          if(opened)
                          {
-                             entt::entity child = parentLink.GetFirstChild();
                              if(child != entt::null)
                              {
                                  SceneHierarchy_DrawChildrenRecursive(topEntity, scene);
@@ -79,14 +81,18 @@ namespace RSim::Editor
     }
 
 
-    void UILayer::SceneHierarchy_DrawChildrenRecursive(Entity parent, Scene *scene)
+    void EditorLayer::SceneHierarchy_DrawChildrenRecursive(Entity parent, Scene *scene)
     {
         Link& parentLink = parent.GetComponent<Link>();
         entt::entity childEntity = parentLink.GetFirstChild();
         Link& childLink = scene->GetComponent<ECS::Link>(childEntity);
         NameComponent& childName = scene->GetComponent<NameComponent>(childEntity);
 
+        entt::entity grandchild = childLink.GetFirstChild();
+
         ImGuiTreeNodeFlags flags = ((m_SelectedEntity == childEntity) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
+        if(grandchild == entt::null) flags |= ImGuiTreeNodeFlags_Leaf;
+
         bool childOpened = ImGui::TreeNodeEx(ENTITY_ID(childEntity),flags,"%s",childName.Name.c_str());
         if(ImGui::IsItemClicked())
         {
@@ -95,7 +101,6 @@ namespace RSim::Editor
         // first child
         if(childOpened)
         {
-            entt::entity grandchild = childLink.GetFirstChild();
             if(grandchild != entt::null)
             {
                 SceneHierarchy_DrawChildrenRecursive({scene,childEntity},scene);
@@ -120,7 +125,7 @@ namespace RSim::Editor
         }
     }
 
-    void UILayer::RenderInspector(ECS::Scene *scene)
+    void EditorLayer::RenderInspector(ECS::Scene *scene)
     {
         ImGui::Begin("Inspector");
         if(m_SelectedEntity.IsNull())
@@ -140,6 +145,20 @@ namespace RSim::Editor
         ImGui::PopFont();
         ImGui::Separator();
 
+        PerspectiveCameraComponent* camera = scene->TryGet<PerspectiveCameraComponent>(m_SelectedEntity);
+        if(camera != nullptr)
+        {
+            ImGui::PushFont(io.Fonts->Fonts[1]);
+            ImGui::Text("Camera Component");
+            ImGui::PopFont();
+
+            ImGui::DragFloat("FOV Half Angle", &camera->FOVHalfAngle,0.05f,20.0f,90.0f);
+            ImGui::DragFloat("Near Z", &camera->NearZ,0.05f,0.1f,10.0f);
+            ImGui::DragFloat("Far Z", &camera->FarZ,0.05f,50.0f,1000.0f);
+            ImGui::End();
+            return;
+        }
+
         ImGui::PushFont(io.Fonts->Fonts[1]);
         ImGui::Text("Transform Component");
         ImGui::PopFont();
@@ -149,28 +168,38 @@ namespace RSim::Editor
         ImGui::DragFloat3("Rotation",(float*)&transform.Rotation,0.01f);
         ImGui::DragFloat3("Scale",(float*)&transform.Scale,0.01f);
 
+        MeshComponent* meshComponent = scene->TryGet<MeshComponent>(m_SelectedEntity);
+        if(meshComponent != nullptr)
+        {
+            ImGui::PushFont(io.Fonts->Fonts[1]);
+            ImGui::Text("Mesh Component");
+            ImGui::PopFont();
+            ImGui::ColorEdit3("Mesh Color",(float*)&meshComponent->Material.Color);
+            ImGui::DragFloat("Shininess",(float*)&meshComponent->Material.Shininess,0.05f,0.1f,256.0f);
+        }
+
         ImGui::End();
     }
 
 
-    void UILayer::OnShutdown(Core::Application*)
+    void EditorLayer::OnShutdown()
 	{
 
 	}
 
-	void UILayer::RenderStatistics(Core::Application* app,Graphics::Renderer* renderer) const
+	void EditorLayer::RenderStatistics(Graphics::Renderer* renderer) const
 	{
+        auto& app = GetApp();
+
 		ImGui::Begin("Stats");
 		ImGui::Text("Total(CPU + GPU)");
 		ImGui::Separator();
-		ImGui::Text("FPS: %0.1f frames/second", app->GetStats().GetFPS());
-		ImGui::Text("Frame Time: %0.1fms", app->GetStats().GetFrameTime());
+		ImGui::Text("FPS: %0.1f frames/second", app.GetStats().GetFPS());
+		ImGui::Text("Frame Time: %0.1fms", app.GetStats().GetFrameTime());
         static bool VSync = true;
         ImGui::Checkbox("Enable VSync",&VSync);
 		ImGui::End();
 
         renderer->SetVSyncState(static_cast<uint32_t>(VSync));
 	}
-
-
 }

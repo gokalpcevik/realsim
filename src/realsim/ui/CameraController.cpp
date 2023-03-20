@@ -38,10 +38,6 @@ namespace RSim::Editor
 
 		DX::XMMATRIX View = DX::XMMatrixLookToLH(m_CameraPosition,CameraDirection, DX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
 
-		HandleZoom(dt);
-		pCamera->FOVHalfAngle = m_FOVHalfAngle;
-		pCamera->FarZ = m_FarZ;
-		pCamera->NearZ = m_NearZ;
 		pCamera->SetViewMatrix(View);
 		//DX::XMMATRIX InvView = DX::XMMatrixInverse(nullptr, View);
 		//DX::XMFLOAT4X4 InvViewF4;
@@ -99,18 +95,7 @@ namespace RSim::Editor
 		}
 	}
 
-	void CameraController::HandleZoom(float dt)
-	{
-		if(Input::IsKeyPressed(SDL_SCANCODE_F))
-		{
-			m_FOVHalfAngle -= dt * 1000000.0f;
-		}
-		else
-		{
-			m_FOVHalfAngle += dt * 1000000.0f;
-		}
-		m_FOVHalfAngle = std::clamp(m_FOVHalfAngle, m_MinFOV, m_MaxFOV);
-	}
+
 
     void CameraController::HandleCameraSpeed()
     {
@@ -123,9 +108,4 @@ namespace RSim::Editor
 			m_StrafeSpeed = m_NormalStrafeSpeed;
 		}
     }
-
-    DirectX::XMMATRIX CameraController::LookAround(float dt)
-    {
-		return DX::XMMatrixIdentity();
-	}
 }

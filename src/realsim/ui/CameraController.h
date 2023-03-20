@@ -14,33 +14,23 @@ namespace RSim::Editor
 	class CameraController
 	{
 	public:
-		CameraController(DirectX::XMFLOAT4 const& InitialCameraPosition = {0.0f,0.0f,-5.0f,1.0f});
+		CameraController(DirectX::XMFLOAT4 const& InitialCameraPosition = {-5.0f, 10.0f, -10.0f, 1.0f});
 
 		void Update(float dt, ECS::PerspectiveCameraComponent* pCamera);
 		void SetEnabled(bool Enabled);
-		void SetNearZ(float NearZ) { m_NearZ = NearZ; }
-		void SetFarZ(float FarZ) { m_FarZ = FarZ; }
 		void SetStrafeSpeed(float Speed) { m_NormalStrafeSpeed = Speed; }
 		void SetFastStrafeSpeed(float Speed) { m_FastStrafeSpeed = Speed; }
-		void SetFoVAngle(float FoV) { m_FOVHalfAngle = FoV / 2.0f; }
 		void SetSensitivity(float Sensitivity) { m_Sensitivity = Sensitivity; }
 		static float NormalizePitch(float Pitch);
 		static float NormalizeYaw(float Yaw);
 	private:
 		void HandleStrafing(DirectX::XMVECTOR const& CameraForward,float dt);
-		void HandleZoom(float dt);
 		void HandleCameraSpeed();
-		DirectX::XMMATRIX LookAround(float dt);
 	private:
-		float m_NearZ = 0.1f;
-		float m_FarZ = 100.0f;
-		float m_NormalStrafeSpeed = 700.0f;
-		float m_FastStrafeSpeed = 1200.0f;
+		float m_NormalStrafeSpeed = 1200.0f;
+		float m_FastStrafeSpeed = 1800.0f;
 		float m_StrafeSpeed = m_NormalStrafeSpeed;
-		float m_FOVHalfAngle = 45.0f;
-		float m_MaxFOV = m_FOVHalfAngle;
-		float m_MinFOV = 22.5f;
-		float m_Sensitivity = 24.0f;
+		float m_Sensitivity = 30.0f;
 		bool m_Enabled = false;
 
 		float m_Yaw = 0.0f;
