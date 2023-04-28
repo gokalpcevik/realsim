@@ -43,51 +43,40 @@ namespace RSim::Core
 		pCamera = &m_Camera.AddComponent<ECS::PerspectiveCameraComponent>(true);
 		pCamera->NearZ = 0.01f;
         pCamera->FOVHalfAngle = 60.0f;
-		pCamera->SetViewMatrix(DirectX::XMMatrixLookAtLH(
-			DirectX::XMVectorSet(-5.0f, 10.0f, -10.0f, 1.0f),
-			DirectX::XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f),
-			DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f)));
+		pCamera->SetViewMatrix(FromDXMath(DirectX::XMMatrixLookAtLH(
+                DirectX::XMVectorSet(-5.0f, 10.0f, -10.0f, 1.0f),
+                DirectX::XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f),
+                DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f))));
 
         //SusanneAsset = AssetLib::LoadBinaryFile("mesh_assets/monkey0.rsim");
 
         SusanneAsset = m_AssetCache.Load("mesh_assets/monkey0.rsim");
         SusanneMeshInfo = ReadMeshInfo(*SusanneAsset);
 
+#if 1
         float shininess = 1.0f;
-        for (size_t i = 0; i < 8; ++i)
+        for (size_t i = 0; i < 4; ++i)
         {
-            for (size_t j = 0; j < 8; ++j)
-            {
-                m_Monkeys[i][j] = m_Scene->CreateEntity();
-                if(j != 0)
-                {
-                    m_Monkeys[i][0].AddChild(m_Monkeys[i][j]);
-                }
-                auto& mesh = m_Monkeys[i][j].AddComponent<ECS::MeshComponent>();
-                mesh.Drawable = m_Renderer->CreateDrawable(&SusanneMeshInfo, SusanneAsset.get());
-                mesh.hAsset = SusanneAsset->HashValue;
-                mesh.pMeshInfo = SusanneMeshInfo;
-                auto& tc = m_Monkeys[i][j].GetComponent<ECS::TransformComponent>();
-                auto& NameComponent = m_Monkeys[i][j].GetComponent<ECS::NameComponent>();
-                NameComponent.Name = fmt::format("Susanne {}-{}",i,j);
-                float r = std::cosf(Util::Random::RandomFloat()) / 2.5f + 0.5f;
-                float g = std::cosf(Util::Random::RandomFloat()) / 2.5f + 0.5f;
-                float b = std::cosf(Util::Random::RandomFloat()) / 2.5f + 0.5f;
-                mesh.Material.Color = { r, g, b, 1.0f};
-                mesh.Material.Shininess = shininess;
-                shininess += 2.0f;
+            m_TestObjs[i] = m_Scene->CreateEntity();
+            auto& TC = m_TestObjs[i].GetComponent<ECS::TransformComponent>();
+            auto& NC = m_TestObjs[i].GetComponent<ECS::NameComponent>();
+            NC.Name = fmt::format("Monkey {0}",i);
+            TC.Translation.x += (float)i * 4.0f;
+            auto& mesh = m_TestObjs[i].AddComponent<ECS::MeshComponent>();
+            mesh.Drawable = m_Renderer->CreateDrawable(&SusanneMeshInfo, SusanneAsset.get());
+            mesh.hAsset = SusanneAsset->HashValue;
+            mesh.pMeshInfo = SusanneMeshInfo;
 
-                tc.Translation = { static_cast<float>(((float)i - 2.0f) * 2.5f) , 0.0f , static_cast<float>(((float)j - 2.0f) * 2.5f) };
-            }
+            float r = std::cosf(Util::Random::RandomFloat()) / 2.5f + 0.5f;
+            float g = std::cosf(Util::Random::RandomFloat()) / 2.5f + 0.5f;
+            float b = std::cosf(Util::Random::RandomFloat()) / 2.5f + 0.5f;
+
+            mesh.Material.Color = { r, g, b, 1.0f};
+            mesh.Material.Shininess = shininess;
+            shininess += 2.0f;
         }
-
-        ECS::Entity parent = m_Monkeys[0][0];
-        ECS::Entity child = parent.GetFirstChild();
-
-        for(auto it = child.begin(); it != ECS::Entity::end(); ++it)
-        {
-            rsim_trace(it->GetName());
-        }
+        m_TestObjs[0].AddChild(m_TestObjs[1]);
+#endif
 
 #if 0
 		m_Box = m_Scene->CreateEntity();

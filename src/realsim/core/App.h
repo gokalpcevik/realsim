@@ -79,6 +79,7 @@ namespace RSim::Core
         static void SetRealSimConsoleTitle(LPCTSTR Title);
 
         [[nodiscard]] Graphics::Renderer& GetMainRenderer() const { return *m_Renderer; }
+        [[nodiscard]] Core::Window& GetMainWindow() const { return *m_MainWindow; }
         [[nodiscard]] ECS::Scene& GetCurrentScene() const { return *m_Scene; }
         [[nodiscard]] UpdateStatistics GetStats() const { return m_UpdateStats; }
 
@@ -114,9 +115,8 @@ namespace RSim::Core
         std::unique_ptr<ECS::Scene> m_Scene;
 
         std::array<std::array<ECS::Entity,8>,8> m_Monkeys;
-        ECS::Entity m_Box;
-        ECS::Entity m_Box2;
-        ECS::Entity m_Box3;
+        std::array<ECS::Entity,4> m_TestObjs;
+
         ECS::Entity m_Camera;
         ECS::PerspectiveCameraComponent* pCamera{};
 

@@ -5,8 +5,6 @@
 #include <SDL2/SDL_syswm.h>
 #include <cassert>
 
-#define RSIM_ENABLE_ASSERTS
-
 #include "Assert.h"
 
 namespace RSim::Core
