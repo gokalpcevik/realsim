@@ -1,9 +1,12 @@
 #pragma once
 #include "realsim/ui/Layer.h"
 #include "realsim/ui/SceneViewWidget.h"
+#include "realsim/ui/Gizmo.h"
 #include "realsim/ecs/Entity.h"
 #include "realsim/ecs/Scene.h"
 #include "realsim/graphics-de/Renderer.h"
+
+#include "ImGuizmo/ImGuizmo.h"
 
 namespace RSim::UI
 {

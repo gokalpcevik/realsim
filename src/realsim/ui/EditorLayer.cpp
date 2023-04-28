@@ -35,13 +35,12 @@ namespace RSim::UI
 			}
 			ImGui::EndMainMenuBar();
 		}
-
         // This is probably fine here
         DrawStatistics(&renderer);
-
         SceneViewWidget::DrawSceneHierarchy(&scene);
         SceneViewWidget::DrawInspector(&scene);
-	}
+        Gizmo::HandleTransformationGizmos(&scene,&app.GetMainWindow());
+    }
 
     void EditorLayer::OnShutdown()
 	{
@@ -57,7 +56,7 @@ namespace RSim::UI
 		ImGui::Separator();
 		ImGui::Text("FPS: %0.1f frames/second", app.GetStats().GetFPS());
 		ImGui::Text("Frame Time: %0.1fms", app.GetStats().GetFrameTime());
-        static bool VSync = false;
+        static bool VSync = true;
         ImGui::Checkbox("Enable VSync",&VSync);
 		ImGui::End();
 
