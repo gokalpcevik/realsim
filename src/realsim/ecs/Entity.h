@@ -2,7 +2,6 @@
 
 #include <tuple>
 #include <entt/entt.hpp>
-#define RSIM_ENABLE_ASSERTS
 
 #include "BasicMath.hpp"
 
@@ -45,7 +44,7 @@ namespace RSim::ECS
         [[nodiscard]] bool  IsFirstChild() const;
 
         [[nodiscard]] Entity GetParent() const;
-        [[nodiscard]] Entity GetTopParent() const;
+        [[nodiscard]] Entity GetTopLevelParent() const;
         [[nodiscard]] Entity GetNextSibling() const;
         [[nodiscard]] Entity GetPreviousSibling() const;
         [[nodiscard]] Entity GetFirstChild() const;

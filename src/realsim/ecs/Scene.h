@@ -18,7 +18,7 @@ namespace RSim::ECS
 
         [[nodiscard]] entt::registry& GetEnTTRegistry();
 
-        [[nodiscard]] size_t GetCreatedEntityCount() const;
+        [[nodiscard]] size_t GetEntityCount() const;
 
     	auto CreateEntity() -> Entity;
 
@@ -43,11 +43,11 @@ namespace RSim::ECS
         template<typename T>
         auto Clear() -> void;
 
+        Entity GetPrimaryCamera();
+
     	void Shutdown();
     private:
         void OnDestroyLink(entt::registry& registry, entt::entity entity);
-
-
     private:
         entt::registry m_Registry{};
     };

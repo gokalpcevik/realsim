@@ -2,6 +2,8 @@
 #include "realsim/ecs/Entity.h"
 #include "realsim/ecs/Link.h"
 
+#include "realsim/ecs/CameraComponent.h"
+
 namespace RSim::ECS
 {
 	Scene::Scene()
@@ -14,7 +16,7 @@ namespace RSim::ECS
         return m_Registry;
 	}
 
-	size_t Scene::GetCreatedEntityCount() const
+	size_t Scene::GetEntityCount() const
 	{
         return m_Registry.size();
 	}
@@ -32,7 +34,6 @@ namespace RSim::ECS
 	auto Scene::FromEnTT(entt::entity entity) -> Entity
 	{
         Entity e{ this, entity };
-        // Will the compiler optimize these out? TODO: Research more.
         volatile auto& tc  = m_Registry.get_or_emplace<TransformComponent>(entity);
         volatile auto& link = m_Registry.get_or_emplace<Link>(entity);
         volatile auto& nc = m_Registry.get_or_emplace<NameComponent>(entity);
@@ -46,6 +47,7 @@ namespace RSim::ECS
 
     void Scene::Update(float dt)
     {
+
     }
 
     void Scene::Shutdown()
@@ -56,7 +58,7 @@ namespace RSim::ECS
     {
         Entity entity_{ this , entity };
         Entity parent = entity_.GetParent();
-        if (parent != Entity::Null) parent.RemoveChild(entity_);
+        if (!parent.IsNull()) parent.RemoveChild(entity_);
 
         Link const& parentLink = entity_.GetLink();
         entt::entity PreviousSibling{ parentLink.GetFirstChild() };
@@ -65,6 +67,19 @@ namespace RSim::ECS
             Link& childLink = GetComponent<Link>(PreviousSibling);
             Destroy({ this,PreviousSibling });
             PreviousSibling = childLink.GetNextSibling();
+        }
+    }
+
+    Entity Scene::GetPrimaryCamera()
+    {
+        auto const cameraView = m_Registry.view<ECS::PerspectiveCameraComponent>();
+        for (auto const entity : cameraView)
+        {
+            auto const& cc = cameraView.get<ECS::PerspectiveCameraComponent>(entity);
+            if (cc.IsPrimaryCamera)
+            {
+                return {this,entity};
+            }
         }
     }
 }

@@ -14,7 +14,7 @@ namespace RSim::ECS
 
     bool Entity::IsNull() const
     {
-        return *this == Entity::Null;
+        return !((m_Scene != nullptr) && (m_EntityHandle != entt::null));
     }
 
     bool Entity::IsFirstChild() const
@@ -28,7 +28,7 @@ namespace RSim::ECS
         return FromEnTT(link.Parent);
     }
 
-    Entity Entity::GetTopParent() const
+    Entity Entity::GetTopLevelParent() const
     {
         Link link = GetLink();
         entt::entity Parent = link.Parent;
@@ -72,7 +72,7 @@ namespace RSim::ECS
         Link& parentLink = GetComponent<Link>();
         // Set the child's parent to this
     	childLink.Parent = *this;
-        
+
         if(parentLink.NumChildren == 0)
         {
             // The parent does not have any children until now, so set the first and last child to the added child
@@ -120,6 +120,20 @@ namespace RSim::ECS
             //      Prev = null           Prev = Child 0                   Prev = Child 1
             //      Next = Child 1        Next = Child to be added         Next = null
         }
+
+        auto& ChildTC = Child.GetComponent<TransformComponent>();
+        ChildTC.ParentTr = &GetComponent<TransformComponent>();
+
+        if(parentLink.Parent == Null)
+        {
+            ChildTC.TopParentTr = ChildTC.ParentTr;
+        }
+        else
+        {
+            auto& ParentTC = m_Scene->GetComponent<TransformComponent>(*this);
+            ChildTC.TopParentTr = ParentTC.TopParentTr;
+        }
+
         return *this;
     }
 
@@ -161,6 +175,14 @@ namespace RSim::ECS
         childLink.Parent = entt::null;
         childLink.ChildIndex = Link::InvalidChildIndex();
         parentLink.NumChildren--;
+
+        auto* pTC = m_Scene->TryGet<TransformComponent>(Child);
+
+        if(pTC != nullptr)
+        {
+            pTC->ParentTr = nullptr;
+            pTC->TopParentTr = nullptr;
+        }
 
     	return *this;
     }
@@ -219,19 +241,32 @@ namespace RSim::ECS
     {
         if (GetParent().IsNull()) return GetLocalTransform();
 
-        Entity parent = GetParent();
-        Dl::float4x4 Transform = GetLocalTransform();
-    	while(parent != Null)
+        //Entity parent = GetParent();
+        //Dl::float4x4 Transform = GetLocalTransform();
+    	//while(parent != Null)
+        //{
+        //    Transform = Transform * parent.GetLocalTransform();
+        //    parent = parent.GetParent();
+        //}
+        //return Transform;
+
+        // Why is this broken? ok commenting out the last if solved it.
+        auto& TransformComp = m_Scene->GetComponent<TransformComponent>(*this);
+        Dl::float4x4 Transform = TransformComp.GetLocalTransform();
+        TransformComponent* ParentTr = TransformComp.ParentTr;
+        while(ParentTr != nullptr)
         {
-            Transform = Transform * parent.GetLocalTransform();
-            parent = parent.GetParent();
+            Transform = Transform * ParentTr->GetLocalTransform();
+            ParentTr = ParentTr->ParentTr;
         }
+        //if(TransformComp.TopParentTr != nullptr)
+            //Transform = Transform * TransformComp.TopParentTr->GetLocalTransform();
         return Transform;
     }
 
     Dl::float4x4 Entity::GetLocalTransform() const
     {
-        return m_Scene->GetComponent<TransformComponent>(*this).GetTransform();
+        return m_Scene->GetComponent<TransformComponent>(*this).GetLocalTransform();
     }
 
 
