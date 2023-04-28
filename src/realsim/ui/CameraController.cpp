@@ -1,6 +1,6 @@
-#include "realsim/editor/CameraController.h"
+#include "realsim/ui/CameraController.h"
 
-namespace RSim::Editor
+namespace RSim::UI
 {
 	using namespace RSim::Core;
 
@@ -35,10 +35,13 @@ namespace RSim::Editor
 		CameraDirection = DX::XMVector4Normalize(CameraDirection);
 		HandleCameraSpeed();
 		HandleStrafing(CameraDirection,dt);
-
+        
 		DX::XMMATRIX View = DX::XMMatrixLookToLH(m_CameraPosition,CameraDirection, DX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
 
-		pCamera->SetViewMatrix(View);
+        Diligent::float4x4 dlView;
+        DX::XMStoreFloat4x4((DX::XMFLOAT4X4*)&dlView,View);
+
+		pCamera->SetViewMatrix(dlView);
 		//DX::XMMATRIX InvView = DX::XMMatrixInverse(nullptr, View);
 		//DX::XMFLOAT4X4 InvViewF4;
 		//DX::XMStoreFloat4x4(&InvViewF4, InvView);

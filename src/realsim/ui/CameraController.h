@@ -9,7 +9,8 @@
 #include "realsim/ecs/Entity.h"
 #include "realsim/ecs/CameraComponent.h"
 
-namespace RSim::Editor
+
+namespace RSim::UI
 {
 	class CameraController
 	{
@@ -27,10 +28,10 @@ namespace RSim::Editor
 		void HandleStrafing(DirectX::XMVECTOR const& CameraForward,float dt);
 		void HandleCameraSpeed();
 	private:
-		float m_NormalStrafeSpeed = 1200.0f;
-		float m_FastStrafeSpeed = 1800.0f;
+		float m_NormalStrafeSpeed = 2000.0f;
+		float m_FastStrafeSpeed = 4000.0f;
 		float m_StrafeSpeed = m_NormalStrafeSpeed;
-		float m_Sensitivity = 30.0f;
+		float m_Sensitivity = 100.0f;
 		bool m_Enabled = false;
 
 		float m_Yaw = 0.0f;
