@@ -44,7 +44,12 @@ namespace RSim::Graphics
 
 	void Renderer::BeginImGuiFrame()
 	{
+        // ImGui_SDL2_NewFrame() and Diligent ImGuiImpl_NewFrame()
 		NewImGuiFrame();
+
+        // ImGuizmo New Frame, right after imgui new frame
+        ImGuizmo::BeginFrame();
+
 		ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 		auto* pRTV = m_pSwapChain->GetCurrentBackBufferRTV();
 		auto* pDSV = m_pSwapChain->GetDepthBufferDSV();
@@ -85,8 +90,6 @@ namespace RSim::Graphics
 	{
 		entt::registry& registry = pScene->GetEnTTRegistry();
 
-
-
 		auto const cameraView = registry.view<ECS::PerspectiveCameraComponent>();
 		ECS::PerspectiveCameraComponent const* cameraComponent = nullptr;
 
@@ -96,6 +99,8 @@ namespace RSim::Graphics
 			return;
 		}
 
+        // get the first camera (entity) in the scene that is primary
+        // if the two primary cameras exist, the first one to be iterated selected
 		for (auto const entity : cameraView)
 		{
 			auto const& cc = cameraView.get<ECS::PerspectiveCameraComponent>(entity);
@@ -108,7 +113,6 @@ namespace RSim::Graphics
 
 		auto const view = registry.view<ECS::MeshComponent, ECS::TransformComponent, ECS::Link>();
 
-
 		for (auto const entity : view)
 		{
 			auto&& [MC, TC, Link] = view.get<ECS::MeshComponent, ECS::TransformComponent, ECS::Link>(entity);
@@ -120,10 +124,10 @@ namespace RSim::Graphics
 
 			ECS::Entity Entity(pScene, entity);
 
-			float4x4 View;
-			float4x4 Projection;
-			DirectX::XMStoreFloat4x4((DirectX::XMFLOAT4X4*)&View, cameraComponent->GetViewMatrix());
-			DirectX::XMStoreFloat4x4((DirectX::XMFLOAT4X4*)&Projection, cameraComponent->GetProjectionMatrix(aspectRatio));
+			float4x4 View = cameraComponent->GetViewMatrix();
+			float4x4 Projection = cameraComponent->GetProjectionMatrix(aspectRatio);
+			//DirectX::XMStoreFloat4x4((DirectX::XMFLOAT4X4*)&View, cameraComponent->GetViewMatrix());
+			//DirectX::XMStoreFloat4x4((DirectX::XMFLOAT4X4*)&Projection, cameraComponent->GetProjectionMatrix(aspectRatio));
 
 			{
                 TransformationData data;
@@ -140,9 +144,9 @@ namespace RSim::Graphics
 
 			{
 				MapHelper<CameraData> CameraCBMap(m_pImmediateContext, MC.Drawable->CameraDataBuffer, MAP_WRITE, MAP_FLAG_DISCARD);
-				CameraData data{};
-				XMStoreFloat4((DirectX::XMFLOAT4*)&data.Position, cameraComponent->GetCameraPosition());
-				XMStoreFloat4((DirectX::XMFLOAT4*)&data.Forward, cameraComponent->GetCameraDirection());
+				CameraData data{cameraComponent->GetCameraPosition(), cameraComponent->GetCameraDirection()};
+				//XMStoreFloat4((DirectX::XMFLOAT4*)&data.Position, cameraComponent->GetCameraPosition());
+				//XMStoreFloat4((DirectX::XMFLOAT4*)&data.Forward, cameraComponent->GetCameraDirection());
 				*CameraCBMap = data;
 			}
 

@@ -29,6 +29,8 @@
 
 #include "realsim/BasicTypes.h"
 
+#include "ImGuizmo/ImGuizmo.h"
+
 namespace RSim::Graphics
 {
 	namespace Dl = Diligent;
